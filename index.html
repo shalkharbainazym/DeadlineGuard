@@ -225,6 +225,13 @@
   .hb .track{grid-column:1/-1;grid-row:2;height:10px;border-radius:999px;background:var(--soft)}
   .hb .fill{height:100%;background:var(--navy);border-radius:999px;transition:width .6s}
   .hb .r:first-child .fill{background:var(--lav-d)}
+  .hb .r.past{border-top:1px dashed var(--line);padding-top:10px} .hb .r.past .fill{background:var(--peach-d)} .hb .r.past span:first-child{color:var(--peach-d);font-weight:700}
+  .lost h3{font-size:19px} .lost h3 em{font-style:normal;color:var(--peach-d)}
+  .lost-rows{display:grid;gap:10px}
+  .lost-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;background:var(--soft);border-radius:16px;padding:12px 14px}
+  .lost-main b{font-size:14px} .lost-main .pill{margin-left:4px;vertical-align:1px}
+  .lost-amt{font-weight:800;font-size:17px;white-space:nowrap}
+  .lost-acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
   .next{display:grid;gap:10px}
   .nx{display:flex;gap:12px;align-items:center;padding:10px;border-radius:16px;background:var(--soft);cursor:pointer;border:0;width:100%;text-align:left;font-family:inherit;color:inherit}
   .nx .tile{width:38px;height:38px;font-size:16px;border-radius:12px}
@@ -464,6 +471,11 @@
             <div class="card kpi"><span class="tile t-sun"><svg class="i"><use href="#i-coin"/></svg></span><div><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div></div>
           </div>
 
+          <div class="card panel lost" id="lostCard" style="display:none">
+            <div class="ph"><div><div class="cap" style="margin:0 0 4px">Already lost · from your bank statement</div><h3 id="lostHead"></h3><div class="cap" id="lostSub"></div></div></div>
+            <div id="lostRows" class="lost-rows"></div>
+          </div>
+
           <div class="card panel" id="chartWhen">
             <div class="ph"><div><h3>When your money is at risk</h3><div class="cap" id="tlCap">Money at risk from open deadlines</div></div></div>
             <div class="tl-ctrl">
@@ -544,7 +556,7 @@
 <div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
 <div class="toast" id="toast"></div>
 
-<script src="js/leaks.js"></script>
+<script src="js/leaks.js?v=3"></script>
 <script>
 /* ================= State ================= */
 const FREE_DOC_LIMIT = 5;
@@ -633,6 +645,7 @@ function render() {
   renderNext(items);
   renderProCard();
   renderSettings();
+  renderLost();
 }
 
 /* ================= Charts ================= */
@@ -725,14 +738,44 @@ function renderCharts(upcoming, in365, sum) {
     { name: "Duplicate charges", v: sum.dupTotal, note: "Charged twice for the same purchase — refundable" },
     { name: "Price hikes", v: sum.hikeAnnual, note: "Extra you pay per year after subscription price increases" });
   parts.sort((a, b) => b.v - a.v);
+  const ptotal = parts.reduce((a, p) => a + p.v, 0);
+  // money that is already gone (past) — shown as its own row, not part of the 12-month forecast
+  const lost = leakData && Leaks.alreadyLost ? Leaks.alreadyLost(leakData) : null;
+  if (lost && lost.total > 0) parts.push({ name: `Already lost (last ${lost.months} mo.)`, v: lost.total, past: true, note: "Already gone from your account — not included in the 12-month number" });
   chartData.parts = parts;
   const pmax = Math.max(1, ...parts.map((p) => p.v));
-  const ptotal = parts.reduce((a, p) => a + p.v, 0);
   $("hbCap").textContent = `What adds up to your ${money(ptotal)} 12-month number`;
   $("hb").setAttribute("aria-label", parts.map((p) => p.name + " " + money(p.v)).join(", "));
-  $("hb").innerHTML = parts.map((p, k) => `<div class="r" data-k="${k}"><span>${esc(p.name)}</span><span class="num">${money(p.v)}</span>
+  $("hb").innerHTML = parts.map((p, k) => `<div class="r ${p.past ? "past" : ""}" data-k="${k}"><span>${esc(p.name)}</span><span class="num">${money(p.v)}</span>
       <div class="track"><div class="fill" style="width:${p.v ? Math.max(3, (p.v / pmax) * 100) : 0}%"></div></div></div>`).join("");
 }
+
+/* ================= Already lost ================= */
+let lostDrafts = {};
+function renderLost() {
+  const card = $("lostCard");
+  const L = leakData && Leaks.alreadyLost ? Leaks.alreadyLost(leakData) : null;
+  card.style.display = L && L.total > 0 ? "" : "none";
+  if (!L || !(L.total > 0)) return;
+  lostDrafts = {};
+  $("lostHead").innerHTML = `You already lost <em>${money2(L.total)}</em> in the last ${L.months} month${L.months > 1 ? "s" : ""}`;
+  $("lostSub").textContent = L.recoverable ? `${money2(L.recoverable)} of it may be recoverable through your bank.` : "Stop these before the next charge.";
+  $("lostRows").innerHTML = L.rows.map((r, k) => {
+    const id = "A" + k;
+    lostDrafts[id] = r.kind === "fee" ? leakAction("fee", { count: r.count, total: r.amount }) : r.kind === "dup" ? leakAction("dup", { name: r.name, date: r.date, amount: r.amount })
+      : leakAction(r.kind === "trial" ? "trial" : "hike", r.ref);
+    const stopped = !r.recoverable && state.cancel[r.name];
+    const btn = r.recoverable
+      ? `<button class="btn btn-ghost btn-sm" onclick="openLostDraft('${id}')">${svgI("mail")} Get it back <span class="pro-badge">PRO</span></button>`
+      : `<button class="btn ${stopped ? "btn-ghost" : "btn-lime"} btn-sm" onclick="toggleCancel('${esc(r.name)}')">${stopped ? "✓ In savings plan" : svgI("cut") + " Stop it"}</button>
+         <button class="btn btn-ghost btn-sm" onclick="openLostDraft('${id}')">${svgI("mail")} What to say <span class="pro-badge">PRO</span></button>`;
+    return `<div class="lost-r">
+      <div class="lost-main"><b>${esc(r.name)}</b> <span class="pill ${r.recoverable ? "p-done" : "p-act"}">${r.recoverable ? "Recoverable" : "Stop it"}</span><div class="meta">${esc(r.detail)}</div></div>
+      <div class="lost-amt">${money2(r.amount)}</div>
+      <div class="lost-acts">${btn}</div></div>`;
+  }).join("");
+}
+function openLostDraft(id) { if (needPro()) return; showDraft(lostDrafts[id]); }
 
 $("tl").addEventListener("mousemove", (e) => {
   const col = e.target.closest(".col"); const x = col && chartData.months[+col.dataset.k];

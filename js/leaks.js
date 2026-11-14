@@ -167,13 +167,16 @@
       let prev = null;
       for (let i = uniq.length - 2; i >= 0; i--) if (Math.abs(uniq[i].amt - last.amt) > 0.009) { prev = uniq[i]; break; }
       if (prev && last.amt > prev.amt * 1.02) {
-        findings.priceHikes.push({ name: sub.name, from: prev.amt, to: last.amt, date: last.date, annualImpact: round2((last.amt - prev.amt) * perYear) });
+        const since = uniq.filter((t) => t.date > prev.date && t.amt > prev.amt * 1.02);
+        findings.priceHikes.push({ name: sub.name, from: prev.amt, to: last.amt, date: last.date, annualImpact: round2((last.amt - prev.amt) * perYear),
+          chargesSince: since.length, extraSoFar: round2(since.reduce((s, t) => s + (t.amt - prev.amt), 0)) });
       }
       // Free trial that turned into a paid plan
       if (list[0].amt < 1.01) {
         const trialStart = list[0];
         if (trialStart.date < uniq[0].date) {
-          findings.trials.push({ name: sub.name, trialDate: trialStart.date, amount: last.amt, annual: sub.annual });
+          findings.trials.push({ name: sub.name, trialDate: trialStart.date, amount: last.amt, annual: sub.annual,
+            charges: uniq.length, paidSoFar: round2(uniq.reduce((s, t) => s + t.amt, 0)) });
         }
       }
     }
@@ -199,7 +202,21 @@
     };
   }
 
-  const api = { parseCSV, normalizeTransactions, merchantKey, detectLeaks, summarize };
+  // Money already gone during the statement period (not a forecast)
+  function alreadyLost(f) {
+    const rows = [];
+    const feeTotal = f.fees.reduce((s, x) => s + x.amount, 0);
+    if (f.fees.length) rows.push({ kind: "fee", name: "Bank fees", detail: f.fees.map((x) => x.name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())).join(", "), amount: round2(feeTotal), count: f.fees.length, recoverable: true });
+    f.duplicates.forEach((x) => rows.push({ kind: "dup", name: x.name, detail: "Charged twice for the same purchase", amount: x.amount, date: x.date, recoverable: true }));
+    f.trials.forEach((x) => rows.push({ kind: "trial", name: x.name, detail: `Free trial turned paid — ${x.charges || 0} charge${x.charges === 1 ? "" : "s"} so far`, amount: x.paidSoFar || 0, recoverable: false, ref: x }));
+    f.priceHikes.forEach((x) => rows.push({ kind: "hike", name: x.name, detail: `Price went up $${x.from.toFixed(2)} → $${x.to.toFixed(2)} — extra paid since`, amount: x.extraSoFar || 0, recoverable: false, ref: x }));
+    const months = f.period ? Math.max(1, Math.round((f.period.to - f.period.from) / DAY / 30.4)) : 1;
+    const total = round2(rows.reduce((s, r) => s + r.amount, 0));
+    return { total, months, rows: rows.filter((r) => r.amount > 0).sort((a, b) => b.amount - a.amount),
+      recoverable: round2(rows.filter((r) => r.recoverable).reduce((s, r) => s + r.amount, 0)) };
+  }
+
+  const api = { parseCSV, normalizeTransactions, merchantKey, detectLeaks, summarize, alreadyLost };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Leaks = api;
 })(typeof window !== "undefined" ? window : globalThis);
