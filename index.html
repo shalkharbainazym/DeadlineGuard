@@ -6,289 +6,372 @@
 <title>DeadlineGuard — never lose money on a missed deadline</title>
 <meta name="description" content="Drop your insurance, lease, receipts and bank statement. DeadlineGuard finds every deadline and money leak — and tells you exactly what to do." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#0f1b2d; --muted:#5b6b82; --line:#e6eaf1; --bg:#f6f8fb; --card:#fff;
-    --brand:#2f5bea; --brand-d:#1f43c4; --brand-l:#eaf0ff;
-    --red:#e5484d; --red-l:#fdecec; --amber:#d97706; --amber-l:#fff4e0; --green:#16a34a; --green-l:#e8f7ee;
-    --radius:16px; --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.06);
+    --navy:#1e1f2e; --navy-2:#2b2c40; --ink:#1e1f2e; --muted:#6b6e80; --line:#ebebe4;
+    --bg:#f4f4ef; --card:#fff; --soft:#f1f1ec;
+    --lime:#d4f56b; --lime-d:#bfe24a; --lav:#c9b6f7; --lav-l:#efe9fd; --lav-d:#5b3fc4;
+    --peach:#fde3d3; --peach-d:#b5471b; --mint:#dcf3e4; --mint-d:#2f7a4b; --sky:#e2ecfd; --sky-d:#2f5bb7; --sun:#fff1c7; --sun-d:#8a6100;
+    --radius:22px; --shadow:0 1px 2px rgba(30,31,46,.04),0 10px 30px rgba(30,31,46,.06);
   }
   *{box-sizing:border-box} html{scroll-behavior:smooth}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
-  a{color:var(--brand);text-decoration:none}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-  header{position:sticky;top:0;z-index:20;background:rgba(246,248,251,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--ink)}
-  .logo svg{width:28px;height:28px}
-  .nav-links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
-  .nav-links a{color:var(--muted)} .nav-links a:hover{color:var(--ink)}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px 18px;font:600 15px Inter,sans-serif;cursor:pointer;transition:.15s}
-  .btn-primary{background:var(--brand);color:#fff} .btn-primary:hover{background:var(--brand-d)}
-  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)} .btn-ghost:hover{border-color:#cbd3e1}
-  .btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+  body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  /* Buttons & pills */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 20px;font:700 14.5px "Plus Jakarta Sans",sans-serif;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn-lime{background:var(--lime);color:var(--navy)} .btn-lime:hover{background:var(--lime-d)}
+  .btn-dark{background:var(--navy);color:#fff} .btn-dark:hover{background:var(--navy-2)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)} .btn-ghost:hover{border-color:#cfcfc4}
+  .btn-sm{padding:8px 13px;font-size:12.5px}
   .btn:disabled{opacity:.6;cursor:wait}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .p-act{background:var(--peach);color:var(--peach-d)} .p-soon{background:var(--sun);color:var(--sun-d)} .p-up{background:var(--lav-l);color:var(--lav-d)}
+  .p-done{background:var(--mint);color:var(--mint-d)} .p-grey{background:var(--soft);color:var(--muted)}
+  .pro-badge{font-size:10px;font-weight:800;background:var(--navy);color:var(--lime);padding:2px 7px;border-radius:6px;margin-left:4px;letter-spacing:.03em}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .tile{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:19px;flex:none}
+  .t-peach{background:var(--peach)} .t-lav{background:var(--lav-l)} .t-mint{background:var(--mint)} .t-sky{background:var(--sky)} .t-sun{background:var(--sun)} .t-lime{background:var(--lime)}
 
-  .hero{padding:64px 0 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
-  .eyebrow{display:inline-flex;gap:8px;align-items:center;background:var(--brand-l);color:var(--brand-d);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px}
-  h1{font-size:48px;line-height:1.08;letter-spacing:-.02em;margin:18px 0 16px}
-  h1 em{font-style:normal;color:var(--red)}
-  .lead{font-size:18px;line-height:1.55;color:var(--muted);margin:0 0 26px;max-width:560px}
-  .cta{display:flex;gap:12px;flex-wrap:wrap}
-  .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:13.5px}
-  .trust span{display:flex;gap:6px;align-items:center}
-  .hero-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:22px;border:1px solid var(--line)}
-  .mini-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14px}
-  .mini-row:last-child{border:0}
-  .mini-row b{font-weight:600} .mini-row small{color:var(--muted);display:block;margin-top:2px}
+  /* ================= Landing ================= */
+  .top{position:sticky;top:0;z-index:20;background:rgba(244,244,239,.85);backdrop-filter:blur(10px)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--ink);cursor:pointer;background:none;border:0;padding:0}
+  .logo .mark{width:34px;height:34px;border-radius:11px;background:var(--navy);display:grid;place-items:center}
+  .logo .mark svg{width:20px;height:20px}
+  .nav-links{display:flex;gap:24px;align-items:center;font-size:14px;font-weight:600}
+  .nav-links a{color:var(--muted)} .nav-links a:hover{color:var(--ink)}
 
-  section{padding:28px 0}
-  h2{font-size:28px;letter-spacing:-.01em;margin:0 0 6px} .sub{color:var(--muted);margin:0 0 22px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .hero{margin-top:8px;background:var(--lav);border-radius:32px;padding:56px 48px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,.18);right:-90px;top:-120px}
+  .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.6);color:var(--navy);font-weight:700;font-size:12.5px;padding:7px 13px;border-radius:999px}
+  h1{font-size:50px;line-height:1.14;letter-spacing:-.03em;margin:18px 0 16px}
+  h1 em{font-style:normal;background:var(--lime);padding:0 10px;border-radius:12px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .lead{font-size:17px;line-height:1.6;color:#36374a;margin:0 0 26px;max-width:540px}
+  .cta{display:flex;gap:10px;flex-wrap:wrap}
+  .trust{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;color:#36374a;font-size:13px;font-weight:600}
+  .catch{background:var(--navy);color:#fff;border-radius:26px;padding:22px;position:relative;z-index:1}
+  .catch .h{font-size:12px;letter-spacing:.08em;color:#a9abc0;font-weight:700;margin-bottom:6px}
+  .mini{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13.5px}
+  .mini:last-child{border:0}
+  .mini .tile{width:36px;height:36px;font-size:16px;border-radius:11px}
+  .mini b{font-weight:700;display:block} .mini small{color:#a9abc0}
+  .mini .amt{margin-left:auto;background:var(--lime);color:var(--navy);font-weight:800;font-size:12.5px;padding:5px 10px;border-radius:999px;white-space:nowrap}
 
-  /* App */
-  #app{display:none}
-  .stats{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:16px;margin-bottom:18px}
-  .stat{padding:20px}
-  .stat .k{font-size:13px;color:var(--muted);font-weight:500}
-  .stat .v{font-size:30px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
-  .stat.hero-stat{background:linear-gradient(135deg,#1b2f6b,#2f5bea);color:#fff;border:0}
-  .stat.hero-stat .k{color:#c9d6ff} .stat.hero-stat .v{font-size:40px}
-  .stat.hero-stat .note{color:#c9d6ff;font-size:12.5px;margin-top:4px}
+  section.l{padding:56px 0 8px}
+  h2{font-size:30px;letter-spacing:-.02em;margin:0 0 6px} .sub{color:var(--muted);margin:0 0 24px;font-size:15px}
+  .flow{display:flex;align-items:stretch;flex-wrap:wrap}
+  .flow .st{flex:1;min-width:170px;padding:20px;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);font-size:13.5px;color:var(--muted);line-height:1.5}
+  .flow .st b{display:block;color:var(--ink);font-size:15.5px;margin:12px 0 4px}
+  .flow .ar{display:grid;place-items:center;padding:0 10px;color:var(--navy);font-size:22px;font-weight:800}
+  .pricing{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:820px}
+  .plan{padding:28px} .plan .p{font-size:40px;font-weight:800;margin:8px 0;letter-spacing:-.02em} .plan .p small{font-size:15px;font-weight:600;opacity:.7}
+  .plan ul{padding:0;list-style:none;margin:18px 0 22px;font-size:14.5px;line-height:2.1}
+  .plan.pro{background:var(--navy);color:#fff} .plan.pro .muted{color:#a9abc0}
+  footer{color:var(--muted);font-size:13px;padding:40px 0;margin-top:40px;border-top:1px solid var(--line)}
 
-  .drop{border:2px dashed #c6d1e6;border-radius:var(--radius);background:#fbfcff;padding:26px;text-align:center;cursor:pointer;transition:.15s}
-  .drop.over,.drop:hover{border-color:var(--brand);background:var(--brand-l)}
-  .drop b{display:block;font-size:16px;margin-bottom:4px} .drop span{color:var(--muted);font-size:13.5px}
-  .files{margin-top:12px;display:grid;gap:8px}
-  .file{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:12px}
-  .file .st{margin-left:auto;font-weight:600}
-  .spin{width:14px;height:14px;border:2px solid var(--brand-l);border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite}
+  /* ================= Dashboard ================= */
+  body:not(.in-app) #app{display:none}
+  body.in-app #landing{display:none}
+  .dash{display:grid;grid-template-columns:232px 1fr;gap:22px;max-width:1380px;margin:0 auto;padding:18px}
+  .side{background:var(--navy);color:#fff;border-radius:28px;padding:22px 16px;position:sticky;top:18px;height:calc(100vh - 36px);display:flex;flex-direction:column;gap:6px}
+  .side .logo{color:#fff;margin:0 6px 22px}
+  .side .logo .mark{background:var(--lime)}
+  .nav-i{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:999px;border:0;background:transparent;color:#c4c6d6;font-weight:600;font-size:14px;cursor:pointer;text-align:left}
+  .nav-i:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .nav-i.on{background:var(--lime);color:var(--navy)}
+  .nav-i .n{margin-left:auto;background:var(--peach);color:var(--peach-d);font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px}
+  .nav-i.on .n{background:var(--navy);color:var(--lime)}
+  .side .grow{flex:1}
+  .procard{background:var(--lime);color:var(--navy);border-radius:22px;padding:18px}
+  .procard b{display:block;font-size:16px;margin-bottom:4px} .procard p{margin:0 0 12px;font-size:12.5px;line-height:1.45}
+
+  .main{min-width:0}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:6px 0 18px;flex-wrap:wrap}
+  .topbar h1{font-size:30px;margin:0;letter-spacing:-.02em} .topbar p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .top-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+  .colL,.colR{display:grid;gap:22px;min-width:0}
+
+  .kpis{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:16px}
+  .kpi{padding:18px;display:flex;flex-direction:column;gap:12px}
+  .kpi .k{font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.35}
+  .kpi .v{font-size:27px;font-weight:800;letter-spacing:-.02em}
+  .kpi.big{background:var(--navy);color:#fff}
+  .kpi.big .k{color:#a9abc0} .kpi.big .v{font-size:38px;color:var(--lime)} .kpi.big .note{font-size:12px;color:#a9abc0;line-height:1.4}
+
+  .panel{padding:20px 22px;position:relative}
+  .ph{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+  .ph h3{margin:0;font-size:16.5px;letter-spacing:-.01em} .ph .cap{color:var(--muted);font-size:12.5px;margin-top:3px}
+
+  .tl{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;align-items:end;height:170px;padding-top:6px;background:repeating-linear-gradient(to top,transparent 0 41px,var(--line) 41px 42px)}
+  .tl .col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:default}
+  .tl .val{font-size:11px;font-weight:800;margin-bottom:4px;white-space:nowrap;background:#fff;padding:0 2px;border-radius:4px}
+  .tl .bar{width:min(12px,70%);background:var(--navy);border-radius:999px;transition:height .6s}
+  .tl .col.max .bar{background:var(--lime);box-shadow:inset 0 0 0 2px var(--navy);width:min(14px,75%)}
+  .tl .col:hover .bar{opacity:.85}
+  .tlx{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;font-size:11px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600}
+  .ctip{position:absolute;pointer-events:none;background:var(--navy);color:#fff;font-size:12px;line-height:1.5;padding:9px 11px;border-radius:12px;max-width:270px;display:none;z-index:5}
+  .ctip b{color:var(--lime)}
+
+  .drop{border:2px dashed #d6d6cb;border-radius:18px;background:var(--soft);padding:22px;text-align:center;cursor:pointer;transition:.15s}
+  .drop.over,.drop:hover{border-color:var(--navy);background:#fbfbf5}
+  .drop b{display:block;font-size:15px;margin-bottom:4px} .drop span{color:var(--muted);font-size:13px}
+  .files{margin-top:10px;display:grid;gap:8px}
+  .file{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;background:var(--soft);border-radius:12px}
+  .file .st{margin-left:auto;font-weight:700;text-align:right}
+  .spin{width:14px;height:14px;border:2px solid var(--lav-l);border-top-color:var(--lav-d);border-radius:50%;animation:sp 1s linear infinite;display:inline-block}
   @keyframes sp{to{transform:rotate(360deg)}}
-
-  .tabs{display:flex;gap:6px;margin:24px 0 14px;flex-wrap:wrap}
-  .tab{padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted);background:transparent;border:0;cursor:pointer}
-  .tab.on{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
-  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 
   .dl{display:grid;gap:12px}
   .item{display:grid;grid-template-columns:auto 1fr auto;gap:16px;padding:18px;align-items:start}
-  .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--brand-l)}
-  .item h3{margin:0;font-size:16px} .meta{color:var(--muted);font-size:13px;margin-top:3px}
-  .why{font-size:14px;line-height:1.5;margin:10px 0 6px;color:#34445c}
-  .action{font-size:14px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:6px}
-  .action b{color:var(--brand-d)}
-  .right{text-align:right;min-width:140px}
-  .amt{font-size:22px;font-weight:800} .amt small{display:block;font-size:12px;color:var(--muted);font-weight:500}
-  .chip{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;margin-bottom:8px}
-  .c-red{background:var(--red-l);color:var(--red)} .c-amber{background:var(--amber-l);color:var(--amber)} .c-green{background:var(--green-l);color:var(--green)} .c-grey{background:#eef1f6;color:var(--muted)}
+  .item h4{margin:0;font-size:15.5px} .meta{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .why{font-size:13.5px;line-height:1.55;margin:10px 0 6px;color:#3d3f52}
+  .action{font-size:13.5px;background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:6px;line-height:1.5}
+  .action b{color:var(--navy)}
+  .right{text-align:right;min-width:120px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .amt{font-size:22px;font-weight:800;letter-spacing:-.02em} .amt small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:0}
   .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .item.done{opacity:.5} .item.done h3{text-decoration:line-through}
-  .empty{padding:28px;text-align:center;color:var(--muted)}
+  .item.done{opacity:.55} .item.done h4{text-decoration:line-through}
+  .empty{padding:28px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
 
-  table.leaks{width:100%;border-collapse:collapse;font-size:14px}
-  table.leaks th{text-align:left;color:var(--muted);font-weight:600;font-size:12.5px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  table.leaks{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.leaks th{text-align:left;color:var(--muted);font-weight:700;font-size:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
   table.leaks td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
   table.leaks tr:last-child td{border:0}
-  .tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:6px}
-  .savebar{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;margin-bottom:14px;background:var(--green-l);border:1px solid #c7ecd5;border-radius:14px;font-weight:600}
-  .savebar .v{font-size:22px;color:var(--green)}
+  .tag{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
+  .savebar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;margin-bottom:14px;background:var(--lime);border-radius:18px;font-weight:700;gap:10px;flex-wrap:wrap}
+  .savebar .v{font-size:22px;font-weight:800}
+  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+  .doc{padding:18px} .doc h4{margin:0 0 4px;font-size:15px} .doc p{margin:8px 0;font-size:13.5px;color:#3d3f52;line-height:1.5}
+  .doc ul{margin:6px 0 0 18px;padding:0;font-size:12.5px;color:var(--muted);line-height:1.6}
 
-  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-  .doc{padding:16px} .doc h4{margin:0 0 4px} .doc p{margin:6px 0;font-size:13.5px;color:#34445c;line-height:1.5}
-  .doc ul{margin:6px 0 0 18px;padding:0;font-size:13px;color:var(--muted)}
+  /* Right column */
+  .protect{background:var(--navy);color:#fff;padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+  .protect .ring{position:relative;width:96px;height:96px}
+  .protect .ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:21px;font-weight:800}
+  .protect h3{margin:0 0 2px;font-size:15px} .protect .v{font-size:26px;font-weight:800;color:var(--lime);letter-spacing:-.02em}
+  .protect p{margin:4px 0 0;font-size:12px;color:#a9abc0;line-height:1.45}
+  .cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .cal-h b{font-size:15px}
+  .cal-nav{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800;color:var(--ink)}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12.5px}
+  .cal .dw{font-size:11px;color:var(--muted);font-weight:700;padding:4px 0}
+  .cal .d{aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-weight:600;position:relative;border:0;background:none;font-size:12.5px;color:var(--ink);padding:0}
+  .cal .d.out{color:#c3c4cc}
+  .cal .d.today{box-shadow:inset 0 0 0 1.5px var(--navy)}
+  .cal .d.has{background:var(--lime);font-weight:800;cursor:pointer}
+  .cal .d.has.done{background:var(--mint)}
+  .cal .d.sel{background:var(--navy);color:var(--lime)}
+  .calinfo{margin-top:12px;font-size:12.5px;line-height:1.5;background:var(--soft);border-radius:12px;padding:10px 12px;min-height:40px}
+  .calinfo b{display:block;font-size:12.5px}
+  .hb{display:grid;gap:11px}
+  .hb .r{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center;font-size:13px;cursor:default}
+  .hb .num{text-align:right;font-weight:800}
+  .hb .track{grid-column:1/-1;grid-row:2;height:10px;border-radius:999px;background:var(--soft)}
+  .hb .fill{height:100%;background:var(--navy);border-radius:999px;transition:width .6s}
+  .hb .r:first-child .fill{background:var(--lav-d)}
+  .next{display:grid;gap:10px}
+  .nx{display:flex;gap:12px;align-items:center;padding:10px;border-radius:16px;background:var(--soft);cursor:pointer;border:0;width:100%;text-align:left;font-family:inherit;color:inherit}
+  .nx .tile{width:38px;height:38px;font-size:16px;border-radius:12px}
+  .nx b{display:block;font-size:13px} .nx small{color:var(--muted);font-size:11.5px}
+  .nx .pill{margin-left:auto}
 
-  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .how .card{padding:22px} .how .n{width:34px;height:34px;border-radius:10px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;font-weight:800;margin-bottom:12px}
-  .how h3{margin:0 0 6px;font-size:17px} .how p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5}
-
-  .pricing{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:780px}
-  .plan{padding:26px} .plan .p{font-size:36px;font-weight:800;margin:6px 0} .plan .p small{font-size:15px;color:var(--muted);font-weight:500}
-  .plan ul{padding:0;list-style:none;margin:16px 0 20px;font-size:14.5px;line-height:2}
-  .plan.pro{border:2px solid var(--brand)}
-  .lock{filter:blur(4px);user-select:none;pointer-events:none}
-  .pro-badge{font-size:11px;font-weight:800;background:var(--brand);color:#fff;padding:2px 7px;border-radius:6px;margin-left:6px}
-
-  .modal-bg{position:fixed;inset:0;background:rgba(15,27,45,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
-  .modal{background:#fff;border-radius:18px;max-width:620px;width:100%;padding:24px;max-height:88vh;overflow:auto}
-  .modal h3{margin:0 0 4px} .modal label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin:14px 0 4px}
-  .modal .box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px;white-space:pre-wrap;line-height:1.5}
+  .modal-bg{position:fixed;inset:0;background:rgba(30,31,46,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal{background:#fff;border-radius:24px;max-width:620px;width:100%;padding:26px;max-height:88vh;overflow:auto}
+  .modal h3{margin:0 0 4px} .modal label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:14px 0 4px}
+  .modal .box{background:var(--soft);border-radius:12px;padding:12px;font-size:14px;white-space:pre-wrap;line-height:1.5}
   .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
-  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;display:none;z-index:60}
-  footer{color:var(--muted);font-size:13px;padding:40px 0;border-top:1px solid var(--line);margin-top:30px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:600;display:none;z-index:60;max-width:calc(100vw - 32px)}
 
-  /* Charts */
-  .charts{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:18px}
-  .chart{padding:18px 20px;position:relative}
-  .chart h3{margin:0;font-size:15px} .chart .cap{color:var(--muted);font-size:12.5px;margin:2px 0 12px}
-  .tl{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;align-items:end;height:150px;border-bottom:1px solid var(--line)}
-  .tl .col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:default}
-  .tl .val{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:3px;white-space:nowrap}
-  .tl .bar{width:min(26px,80%);background:var(--brand);border-radius:4px 4px 0 0;min-height:0;transition:height .6s}
-  .tl .col:hover .bar{background:var(--brand-d)}
-  .tl .col.empty .bar{background:transparent}
-  .tlx{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
-  .hb{display:grid;gap:10px}
-  .hb .r{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;font-size:13px;cursor:default}
-  .hb .lab{color:var(--ink)} .hb .num{text-align:right;font-weight:700;color:var(--ink)}
-  .hb .track{grid-column:1/-1;grid-row:2;height:12px;border-radius:0 4px 4px 0;background:var(--bg)}
-  .hb .fill{height:100%;background:var(--brand);border-radius:0 4px 4px 0;transition:width .6s}
-  .hb .r:hover .fill{background:var(--brand-d)}
-  .ctip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;line-height:1.45;padding:8px 10px;border-radius:8px;max-width:260px;display:none;z-index:5;box-shadow:var(--shadow)}
-  .flow{display:flex;align-items:stretch;gap:0;margin:0 0 22px;flex-wrap:wrap}
-  .flow .st{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;font-size:13.5px;color:var(--muted)}
-  .flow .st b{display:block;color:var(--ink);font-size:14.5px;margin:4px 0 2px} .flow .st .e{font-size:24px}
-  .flow .ar{display:grid;place-items:center;color:var(--brand);font-size:22px;font-weight:800;padding:0 8px}
-
-  @media (max-width:860px){
-    .charts{grid-template-columns:1fr} .flow{flex-direction:column} .flow .ar{transform:rotate(90deg);padding:4px 0}
-    .hero{grid-template-columns:1fr;padding-top:36px} h1{font-size:36px}
-    .stats{grid-template-columns:1fr 1fr} .how,.pricing{grid-template-columns:1fr}
-    .item{grid-template-columns:auto 1fr} .right{grid-column:1/-1;text-align:left}
-    .nav-links a:not(.btn){display:none}
+  @media (max-width:1180px){ .cols{grid-template-columns:1fr} .colR{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;padding:34px 22px;border-radius:26px} h1{font-size:36px}
+    .pricing{grid-template-columns:1fr} .flow{flex-direction:column} .flow .ar{transform:rotate(90deg);padding:4px 0}
+    .nav-links a{display:none}
+    .dash{grid-template-columns:1fr;padding:12px;gap:14px}
+    .side{position:static;height:auto;flex-direction:row;align-items:center;gap:6px;padding:10px;border-radius:22px;overflow-x:auto}
+    .side .logo{margin:0 8px 0 4px} .side .logo span{display:none}
+    .side .grow,.procard{display:none}
+    .nav-i{width:auto;padding:9px 13px;font-size:13px;flex:none}
+    .kpis{grid-template-columns:1fr 1fr} .kpi.big{grid-column:1/-1}
+    .colR{grid-template-columns:1fr}
+    .item{grid-template-columns:auto 1fr} .right{grid-column:1/-1;align-items:flex-start;text-align:left;flex-direction:row;justify-content:space-between;width:100%}
+    .tl .val{font-size:9.5px}
+    table.leaks th:nth-child(3),table.leaks td:nth-child(3){display:none}
   }
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="#top">
-      <svg viewBox="0 0 32 32" fill="none"><path d="M16 3l11 4v8c0 7-4.7 12.3-11 14-6.3-1.7-11-7-11-14V7l11-4z" fill="#2f5bea"/><path d="M11 16.5l3.5 3.5L21.5 13" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      DeadlineGuard
-    </a>
-    <nav class="nav-links">
-      <a href="#how">How it works</a>
-      <a href="#pricing">Pricing</a>
-      <button class="btn btn-primary btn-sm" onclick="runSample()">Try the demo</button>
-    </nav>
-  </div>
-</header>
-
-<main id="top" class="wrap">
-  <div class="hero">
-    <div>
-      <span class="eyebrow">🛡️ For first-time adults in the US</span>
-      <h1>Adulting gets <em>expensive</em> when you miss a deadline.</h1>
-      <p class="lead">Drop in your insurance policy, lease, receipts, benefits statement and bank statement. DeadlineGuard reads them, finds every date and leak that can cost you money, and tells you exactly what to do — before it's too late.</p>
-      <div class="cta">
-        <button id="sampleBtn" class="btn btn-primary" onclick="runSample()">▶ Try with sample documents</button>
-        <button class="btn btn-ghost" onclick="openApp(true)">Upload my documents</button>
-      </div>
-      <div class="trust">
-        <span>🔒 No bank login, ever</span><span>🗑️ Files are analyzed, never stored</span><span>💻 Your data stays in your browser</span>
-      </div>
+<!-- ================= LANDING ================= -->
+<div id="landing">
+  <header class="top">
+    <div class="wrap nav">
+      <button class="logo" onclick="goHome()" aria-label="DeadlineGuard home">
+        <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l8 3v6c0 5.2-3.4 9.1-8 10.5-4.6-1.4-8-5.3-8-10.5v-6l8-3z" fill="#d4f56b"/><path d="M8.3 12.3l2.6 2.6 5-5.4" stroke="#1e1f2e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        DeadlineGuard
+      </button>
+      <nav class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <button class="btn btn-dark btn-sm" onclick="runSample()">Try the demo</button>
+      </nav>
     </div>
-    <div class="hero-card">
-      <div style="font-size:13px;color:var(--muted);font-weight:600">WHAT WE CATCH</div>
-      <div class="mini-row"><div><b>🚗 Insurance auto-renews +18%</b><small>Shop around 30 days before renewal</small></div><span class="chip c-red">$256</span></div>
-      <div class="mini-row"><div><b>🏠 Lease notice deadline</b><small>Miss it → month-to-month at +$250/mo</small></div><span class="chip c-red">$750</span></div>
-      <div class="mini-row"><div><b>🩺 FSA balance expires Dec 31</b><small>Use it or lose it</small></div><span class="chip c-amber">$612</span></div>
-      <div class="mini-row"><div><b>💻 Laptop warranty ends</b><small>Last day to add protection</small></div><span class="chip c-amber">$350+</span></div>
-      <div class="mini-row"><div><b>🔁 Forgotten subscriptions & fees</b><small>Price hikes, trials, overdrafts</small></div><span class="chip c-amber">$537/yr</span></div>
-    </div>
-  </div>
+  </header>
 
-  <!-- ================= APP ================= -->
-  <section id="app">
-    <div class="stats">
-      <div class="card stat hero-stat">
-        <div class="k">Money you could lose in the next 12 months</div>
-        <div class="v" id="sTotal">$0</div>
-        <div class="note" id="sTotalNote">Add documents to see your number</div>
+  <main class="wrap">
+    <div class="hero">
+      <div style="position:relative;z-index:1">
+        <span class="eyebrow">🛡️ For first-time adults in the US</span>
+        <h1>Adulting gets <em>expensive</em> when you miss a deadline.</h1>
+        <p class="lead">Drop in your insurance policy, lease, receipts, benefits statement and bank statement. DeadlineGuard reads them, finds every date and leak that can cost you money, and tells you exactly what to do — before it's too late.</p>
+        <div class="cta">
+          <button id="sampleBtn" class="btn btn-dark" onclick="runSample()">▶ Try with sample documents</button>
+          <button class="btn btn-lime" onclick="openApp(true)">Upload my documents</button>
+          <button id="dashBtn" class="btn btn-ghost" style="display:none" onclick="openApp()">Open my dashboard →</button>
+        </div>
+        <div class="trust"><span>🔒 No bank login, ever</span><span>🗑️ Files analyzed, never stored</span><span>💻 Data stays in your browser</span></div>
       </div>
-      <div class="card stat"><div class="k">Deadlines in next 90 days</div><div class="v" id="s90">0</div></div>
-      <div class="card stat"><div class="k">Subscriptions per year</div><div class="v" id="sSubs">$0</div></div>
-      <div class="card stat"><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div>
-    </div>
-
-    <div class="charts" id="charts" style="display:none">
-      <div class="card chart" id="chartWhen">
-        <h3>When your money is at risk</h3>
-        <div class="cap" id="tlCap">Money at risk from document deadlines, by week (next 90 days)</div>
-        <div class="tl" id="tl" role="img"></div>
-        <div class="tlx" id="tlx"></div>
-        <div class="ctip" id="tipWhen"></div>
-      </div>
-      <div class="card chart" id="chartWhere">
-        <h3>Where it comes from</h3>
-        <div class="cap" id="hbCap">What adds up to your 12-month number</div>
-        <div class="hb" id="hb" role="img"></div>
-        <div class="ctip" id="tipWhere"></div>
+      <div class="catch">
+        <div class="h">WHAT WE CATCH</div>
+        <div class="mini"><span class="tile t-peach">🚗</span><div><b>Insurance auto-renews +18%</b><small>Shop around before renewal</small></div><span class="amt">$256</span></div>
+        <div class="mini"><span class="tile t-lav">🏠</span><div><b>Lease notice deadline</b><small>Miss it → +$250/mo rent</small></div><span class="amt">$750</span></div>
+        <div class="mini"><span class="tile t-mint">🩺</span><div><b>FSA balance expires Dec 31</b><small>Use it or lose it</small></div><span class="amt">$612</span></div>
+        <div class="mini"><span class="tile t-sky">💻</span><div><b>Laptop warranty ends</b><small>Last day to file a claim</small></div><span class="amt">$350+</span></div>
+        <div class="mini"><span class="tile t-sun">🔁</span><div><b>Subscriptions & fees</b><small>Price hikes, trials, overdrafts</small></div><span class="amt">$537/yr</span></div>
       </div>
     </div>
 
-    <div class="card" style="padding:18px">
-      <div id="drop" class="drop" onclick="document.getElementById('fileIn').click()">
-        <b>📄 Drop documents here or click to upload</b>
-        <span>Insurance policy, lease, receipt/warranty, FSA/HSA or tax notice (PDF, JPG, PNG, TXT) · Bank statement (CSV)</span>
+    <section class="l" id="how">
+      <h2>How it works</h2>
+      <p class="sub">Three minutes once. Peace of mind all year.</p>
+      <div class="flow" aria-label="How DeadlineGuard works">
+        <div class="st"><span class="tile t-peach">📄</span><b>Drop your paperwork</b>Policy, lease, receipt, FSA statement and a CSV from your bank app. No passwords, no bank connection.</div>
+        <div class="ar">→</div>
+        <div class="st"><span class="tile t-lav">🤖</span><b>AI reads the fine print</b>Auto-renewals, notice periods, price increases, use-it-or-lose-it balances, sneaky fees.</div>
+        <div class="ar">→</div>
+        <div class="st"><span class="tile t-sun">💲</span><b>Every deadline in dollars</b>"$750 at risk by Dec 2" — so you know what matters first.</div>
+        <div class="ar">→</div>
+        <div class="st"><span class="tile t-mint">✅</span><b>One clear action</b>A ready-to-send email, a call script and a calendar reminder.</div>
       </div>
-      <input id="fileIn" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" style="display:none" />
-      <div id="files" class="files"></div>
-    </div>
+    </section>
 
-    <div class="tabs">
-      <button class="tab on" data-t="deadlines">📅 Deadlines</button>
-      <button class="tab" data-t="leaks">🔁 Subscriptions & leaks</button>
-      <button class="tab" data-t="docs">📁 Documents</button>
-    </div>
+    <section class="l" id="pricing">
+      <h2>Pricing</h2>
+      <p class="sub">One avoided auto-renewal pays for years of Pro.</p>
+      <div class="pricing">
+        <div class="card plan">
+          <div style="font-weight:800">Free</div>
+          <div class="p">$0</div>
+          <ul><li>✅ Up to 5 documents</li><li>✅ Deadline timeline & money-at-risk score</li><li>✅ Subscription & fee scan</li><li style="color:var(--muted)">— Ready-to-send emails & scripts</li><li style="color:var(--muted)">— Calendar reminders</li></ul>
+          <button class="btn btn-ghost" style="width:100%" onclick="runSample()">Try the demo</button>
+        </div>
+        <div class="card plan pro">
+          <div style="font-weight:800">Pro <span class="pill p-up" style="background:var(--lime);color:var(--navy);margin-left:6px">MOST POPULAR</span></div>
+          <div class="p">$5<small>/month</small></div>
+          <div class="muted" style="font-size:14px">or $49/year</div>
+          <ul><li>✅ Unlimited documents</li><li>✅ AI-drafted emails & call scripts</li><li>✅ Calendar reminders for every deadline</li><li>✅ Quarterly re-scan reminders</li><li>✅ Household sharing (coming soon)</li></ul>
+          <button class="btn btn-lime" style="width:100%" onclick="openUpgrade()">Get Pro</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap">© 2026 DeadlineGuard · Built for Business Cup 2.0 · Sample documents are fictional. DeadlineGuard gives general information, not legal, tax or financial advice.</div></footer>
+</div>
 
-    <div id="t-deadlines">
-      <div class="toolbar">
-        <div class="sub" style="margin:0">Sorted by what to act on first.</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="exportICS()">📆 Add all to calendar <span class="pro-badge">PRO</span></button>
+<!-- ================= DASHBOARD ================= -->
+<div id="app">
+  <div class="dash">
+    <aside class="side">
+      <button class="logo" onclick="goHome()" aria-label="Back to home">
+        <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l8 3v6c0 5.2-3.4 9.1-8 10.5-4.6-1.4-8-5.3-8-10.5v-6l8-3z" fill="#1e1f2e"/><path d="M8.3 12.3l2.6 2.6 5-5.4" stroke="#d4f56b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>DeadlineGuard</span>
+      </button>
+      <button class="nav-i on" data-t="overview">🏠 Dashboard</button>
+      <button class="nav-i" data-t="deadlines">📅 Deadlines <span class="n" id="nDl" style="display:none"></span></button>
+      <button class="nav-i" data-t="leaks">🔁 Subscriptions</button>
+      <button class="nav-i" data-t="docs">📁 Documents</button>
+      <button class="nav-i" onclick="exportICS()">📆 Add to calendar</button>
+      <div class="grow"></div>
+      <div class="procard" id="procard"></div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div><h1>Welcome back 👋</h1><p>Here's what could cost you money — and exactly what to do about it.</p></div>
+        <div class="top-actions">
+          <button class="btn btn-dark btn-sm" onclick="$('fileIn').click()">＋ Upload documents</button>
           <button class="btn btn-ghost btn-sm" onclick="resetAll()">Reset</button>
         </div>
       </div>
-      <div id="dl" class="dl"></div>
-    </div>
-    <div id="t-leaks" style="display:none"><div id="leaks"></div></div>
-    <div id="t-docs" style="display:none"><div id="docs" class="docs"></div></div>
-  </section>
 
-  <section id="how">
-    <h2>How it works</h2>
-    <p class="sub">Three minutes once. Peace of mind all year.</p>
-    <div class="flow" aria-label="How DeadlineGuard works">
-      <div class="st"><div class="e">📄</div><b>Your paperwork</b>Policy, lease, receipt, FSA, bank CSV</div>
-      <div class="ar">→</div>
-      <div class="st"><div class="e">🤖</div><b>AI reads the fine print</b>Dates, amounts, auto-renewals, fees</div>
-      <div class="ar">→</div>
-      <div class="st"><div class="e">💲</div><b>Deadline in dollars</b>"$750 at risk by Dec 2"</div>
-      <div class="ar">→</div>
-      <div class="st"><div class="e">✅</div><b>One clear action</b>Ready email + calendar reminder</div>
-    </div>
-    <div class="how">
-      <div class="card"><div class="n">1</div><h3>Drop your paperwork</h3><p>Upload the PDFs and photos you already have, plus a CSV statement from your bank app. No passwords, no bank connection.</p></div>
-      <div class="card"><div class="n">2</div><h3>AI finds the money traps</h3><p>We read the fine print: auto-renewals, price increases, notice periods, use-it-or-lose-it balances, warranty ends, sneaky fees.</p></div>
-      <div class="card"><div class="n">3</div><h3>Act before it costs you</h3><p>Each deadline comes with a plain-English explanation, the exact next step, a ready-to-send email and a calendar reminder.</p></div>
-    </div>
-  </section>
+      <div class="cols">
+        <div class="colL">
+          <div class="kpis">
+            <div class="card kpi big">
+              <div class="k">Money you could lose in the next 12 months</div>
+              <div class="v" id="sTotal">$0</div>
+              <div class="note" id="sTotalNote">Add documents to see your number</div>
+            </div>
+            <div class="card kpi"><span class="tile t-peach">⏰</span><div><div class="k">Deadlines in next 90 days</div><div class="v" id="s90">0</div></div></div>
+            <div class="card kpi"><span class="tile t-lav">🔁</span><div><div class="k">Subscriptions per year</div><div class="v" id="sSubs">$0</div></div></div>
+            <div class="card kpi"><span class="tile t-sun">💸</span><div><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div></div>
+          </div>
 
-  <section id="pricing">
-    <h2>Pricing</h2>
-    <p class="sub">One avoided auto-renewal pays for years of Pro.</p>
-    <div class="pricing">
-      <div class="card plan">
-        <div style="font-weight:700">Free</div>
-        <div class="p">$0</div>
-        <ul><li>✅ Up to 5 documents</li><li>✅ Deadline timeline & money-at-risk score</li><li>✅ Subscription & fee scan</li><li>— Ready-to-send emails & scripts</li><li>— Calendar reminders</li></ul>
-        <button class="btn btn-ghost" style="width:100%" onclick="runSample()">Try the demo</button>
+          <div class="card panel" id="chartWhen">
+            <div class="ph"><div><h3>When your money is at risk</h3><div class="cap" id="tlCap">Money at risk from document deadlines, by week (next 90 days)</div></div><span class="pill p-grey">Weekly</span></div>
+            <div class="tl" id="tl" role="img"></div>
+            <div class="tlx" id="tlx"></div>
+            <div class="ctip" id="tipWhen"></div>
+          </div>
+
+          <div class="card panel">
+            <div id="drop" class="drop" onclick="$('fileIn').click()">
+              <b>📄 Drop documents here or click to upload</b>
+              <span>Insurance policy, lease, receipt/warranty, FSA/HSA or tax notice (PDF, JPG, PNG, TXT) · Bank statement (CSV)</span>
+            </div>
+            <input id="fileIn" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" style="display:none" />
+            <div id="files" class="files"></div>
+          </div>
+
+          <div id="views">
+            <div id="t-deadlines">
+              <div class="ph" style="margin:4px 4px 12px"><div><h3>Your deadlines</h3><div class="cap">Sorted by what to act on first</div></div>
+                <button class="btn btn-ghost btn-sm" onclick="exportICS()">📆 Add all to calendar <span class="pro-badge">PRO</span></button></div>
+              <div id="dl" class="dl"></div>
+            </div>
+            <div id="t-leaks" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Subscriptions & money leaks</h3><div class="cap">From your bank statement — analyzed in your browser</div></div></div><div id="leaks"></div></div>
+            <div id="t-docs" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Your documents</h3><div class="cap">What each document means for your money</div></div></div><div id="docs" class="docs"></div></div>
+          </div>
+        </div>
+
+        <div class="colR">
+          <div class="card protect">
+            <div class="ring" id="ring"></div>
+            <div><h3>Money protected</h3><div class="v" id="protV">$0</div><p id="protP">Mark deadlines as handled and cancel unused subscriptions to raise your score.</p></div>
+          </div>
+          <div class="card panel">
+            <div class="cal-h"><button class="cal-nav" onclick="calMove(-1)" aria-label="Previous month">‹</button><b id="calTitle"></b><button class="cal-nav" onclick="calMove(1)" aria-label="Next month">›</button></div>
+            <div class="cal" id="cal"></div>
+            <div class="calinfo" id="calInfo"></div>
+          </div>
+          <div class="card panel">
+            <div class="ph"><div><h3>Next up</h3><div class="cap">Act in this order</div></div></div>
+            <div class="next" id="next"></div>
+          </div>
+          <div class="card panel" id="chartWhere">
+            <div class="ph"><div><h3>Where it comes from</h3><div class="cap" id="hbCap">What adds up to your 12-month number</div></div></div>
+            <div class="hb" id="hb" role="img"></div>
+            <div class="ctip" id="tipWhere"></div>
+          </div>
+        </div>
       </div>
-      <div class="card plan pro">
-        <div style="font-weight:700">Pro <span class="pro-badge">MOST POPULAR</span></div>
-        <div class="p">$5<small>/month</small></div>
-        <div style="color:var(--muted);font-size:14px">or $49/year</div>
-        <ul><li>✅ Unlimited documents</li><li>✅ AI-drafted emails & call scripts</li><li>✅ Calendar reminders for every deadline</li><li>✅ Quarterly re-scan reminders</li><li>✅ Household sharing (coming soon)</li></ul>
-        <button class="btn btn-primary" style="width:100%" onclick="openUpgrade()">Get Pro</button>
-      </div>
     </div>
-  </section>
-</main>
-
-<footer>
-  <div class="wrap">© 2026 DeadlineGuard · Built for Business Cup 2.0 · Sample documents are fictional. DeadlineGuard gives general information, not legal, tax or financial advice.</div>
-</footer>
+  </div>
+</div>
 
 <div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
 <div class="toast" id="toast"></div>
@@ -316,23 +399,40 @@ const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const parseDay = (s) => { if (!s) return null; const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
 const daysUntil = (d) => (d ? Math.round((d - today()) / 86400000) : null);
 const fmtDate = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
+const shortDate = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const ICONS = { auto_insurance: "🚗", home_insurance: "🏡", renters_insurance: "🏡", health_insurance: "🩺", warranty: "💻", lease: "🏠", tax: "🧾", fsa_hsa: "🩺", subscription: "🔁", id_document: "🪪", bill: "📨", other: "📄" };
+const TILES = { auto_insurance: "t-peach", home_insurance: "t-lav", renters_insurance: "t-lav", health_insurance: "t-mint", warranty: "t-sky", lease: "t-lav", tax: "t-sun", fsa_hsa: "t-mint", subscription: "t-sun", id_document: "t-sky", bill: "t-peach", other: "t-sky" };
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = "none"), 2600); }
 
 function allItems() {
   const out = [];
-  state.docs.forEach((doc, di) => (doc.items || []).forEach((it, ii) => {
+  state.docs.forEach((doc) => (doc.items || []).forEach((it, ii) => {
     const id = doc.id + ":" + ii;
     out.push(Object.assign({}, it, { id, doc, dateObj: parseDay(it.date), actBy: parseDay(it.act_by), done: !!state.done[id] }));
   }));
   return out;
 }
 
+// Status of a deadline: what the user should feel about it
+function statusOf(i) {
+  if (i.done) return { cls: "p-done", txt: "✓ Handled", rank: 4 };
+  const n = daysUntil(i.dateObj);
+  if (n === null) return { cls: "p-grey", txt: "No date", rank: 3 };
+  if (n < 0) return { cls: "p-grey", txt: "Passed", rank: 5 };
+  const a = daysUntil(i.actBy);
+  if (n <= 21 || (a !== null && a <= 7)) return { cls: "p-act", txt: "Act now", rank: 0 };
+  if (n <= 60) return { cls: "p-soon", txt: "Soon", rank: 1 };
+  return { cls: "p-up", txt: "Upcoming", rank: 2 };
+}
+const whenTxt = (d) => { const n = daysUntil(d); return n === null ? "No date" : n < 0 ? `${-n}d ago` : n === 0 ? "today" : `in ${n} day${n === 1 ? "" : "s"}`; };
+
 /* ================= Rendering ================= */
 function animateNumber(el, to) {
   const from = el._v || 0; const t0 = performance.now(); el._v = to;
   const step = (t) => { const p = Math.min(1, (t - t0) / 900); el.textContent = money(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
+  clearTimeout(el._t); el._t = setTimeout(() => (el.textContent = money(to)), 1000); // also correct when the tab is in the background
 }
 
 function render() {
@@ -341,16 +441,26 @@ function render() {
   const in365 = upcoming.filter((i) => daysUntil(i.dateObj) <= 365).reduce((s, i) => s + (+i.money_at_risk || 0), 0);
   const n90 = upcoming.filter((i) => daysUntil(i.dateObj) <= 90).length;
   const sum = leakData ? Leaks.summarize(leakData) : null;
-  const leakYear = sum ? sum.leakAnnual : 0;
+  // leaks from subscriptions the user decided to cancel are no longer "at risk"
+  const cancelledLeak = leakData ? leakData.trials.filter((t) => state.cancel[t.name]).reduce((a, t) => a + t.annual, 0)
+    + leakData.priceHikes.filter((h) => state.cancel[h.name]).reduce((a, h) => a + h.annualImpact, 0) : 0;
+  const leakYear = sum ? Math.max(0, sum.leakAnnual - cancelledLeak) : 0;
   animateNumber($("sTotal"), in365 + leakYear);
   $("sTotalNote").textContent = state.docs.length || sum ? `${upcoming.length} open deadlines + money leaks from your bank statement` : "Add documents to see your number";
   $("s90").textContent = n90;
   $("sSubs").textContent = money(sum ? sum.subsAnnual : 0);
   $("sLeaks").textContent = money(leakYear);
+  const nAct = upcoming.filter((i) => statusOf(i).rank === 0).length;
+  $("nDl").textContent = nAct; $("nDl").style.display = nAct ? "" : "none";
+  $("dashBtn").style.display = state.docs.length || state.csv ? "" : "none";
   renderDeadlines(items);
   renderLeaks(sum);
   renderDocs();
   renderCharts(upcoming, in365, sum);
+  renderProtection(items, in365 + leakYear);
+  renderCalendar(items);
+  renderNext(items);
+  renderProCard();
 }
 
 /* ================= Charts ================= */
@@ -367,34 +477,29 @@ function chartTip(tipId, host, html, ev) {
 const WEEKS = 13;
 let chartData = { months: [], parts: [] };
 function renderCharts(upcoming, in365, sum) {
-  const show = upcoming.length || sum;
-  $("charts").style.display = show ? "grid" : "none";
-  if (!show) return;
-
-  // 1) Money at risk per week, next 13 weeks / ~90 days (single series, magnitude → one brand color)
-  const t0 = today(); const months = []; const short = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  // 1) Money at risk per week, next 13 weeks / ~90 days. One series; the most expensive week is highlighted.
+  const t0 = today(); const weeks = [];
   for (let w = 0; w < WEEKS; w++) {
     const s = new Date(t0); s.setDate(s.getDate() + w * 7); const e = new Date(s); e.setDate(e.getDate() + 6);
-    months.push({ label: w % 2 ? "" : short(s), long: `Week of ${short(s)} – ${short(e)}`, from: w * 7, to: w * 7 + 6, total: 0, items: [] });
+    weeks.push({ label: w % 2 ? "" : shortDate(s), long: `Week of ${shortDate(s)} – ${shortDate(e)}`, from: w * 7, to: w * 7 + 6, total: 0, items: [] });
   }
   let later = 0;
   upcoming.filter((i) => daysUntil(i.dateObj) <= 365).forEach((i) => {
-    const n = daysUntil(i.dateObj); const b = months.find((x) => n >= x.from && n <= x.to);
+    const n = daysUntil(i.dateObj); const b = weeks.find((x) => n >= x.from && n <= x.to);
     if (b) { b.total += +i.money_at_risk || 0; b.items.push(i); } else later++;
   });
-  const max = Math.max(1, ...months.map((x) => x.total));
-  chartData.months = months;
-  $("tlCap").textContent = `Money at risk from document deadlines, by week (next 90 days)${later ? ` · ${later} more deadline${later > 1 ? "s" : ""} later this year` : ""}`;
-  $("tl").setAttribute("aria-label", "Money at risk by week: " + months.filter((x) => x.total).map((x) => x.long + " " + money(x.total)).join(", "));
-  $("tl").innerHTML = months.map((x, k) => `<div class="col ${x.total ? "" : "empty"}" data-k="${k}">
+  const max = Math.max(1, ...weeks.map((x) => x.total));
+  const maxK = weeks.findIndex((x) => x.total === max && x.total > 0);
+  chartData.months = weeks;
+  $("tlCap").textContent = `Money at risk from document deadlines, by week (next 90 days)${later ? ` · ${later} more later this year` : ""}`;
+  $("tl").setAttribute("aria-label", "Money at risk by week: " + (weeks.filter((x) => x.total).map((x) => x.long + " " + money(x.total)).join(", ") || "none"));
+  $("tl").innerHTML = weeks.map((x, k) => `<div class="col ${k === maxK ? "max" : ""}" data-k="${k}">
       ${x.total ? `<div class="val">${money(x.total)}</div>` : ""}
-      <div class="bar" style="height:${x.total ? Math.max(4, (x.total / max) * 118) : 0}px"></div></div>`).join("");
-  $("tlx").innerHTML = months.map((x) => `<div>${x.label}</div>`).join("");
+      <div class="bar" style="height:${x.total ? Math.max(6, (x.total / max) * 130) : 3}px;${x.total ? "" : "opacity:.15"}"></div></div>`).join("");
+  $("tlx").innerHTML = weeks.map((x) => `<div>${x.label}</div>`).join("");
 
-  // 2) What the 12-month number is made of (horizontal bars, sorted)
-  const parts = [
-    { name: "Document deadlines", v: in365, note: `${upcoming.filter((i) => daysUntil(i.dateObj) <= 365).length} open deadlines from your documents` },
-  ];
+  // 2) What the 12-month number is made of
+  const parts = [{ name: "Document deadlines", v: in365, note: `${upcoming.filter((i) => daysUntil(i.dateObj) <= 365).length} open deadlines from your documents` }];
   if (sum) parts.push(
     { name: "Bank fees", v: sum.feeAnnual, note: `${money2(sum.feeTotal)} in fees on this statement, projected to a full year` },
     { name: "Trials → paid", v: sum.trialAnnual, note: "Free trials that quietly became paid plans, per year" },
@@ -406,9 +511,8 @@ function renderCharts(upcoming, in365, sum) {
   const ptotal = parts.reduce((a, p) => a + p.v, 0);
   $("hbCap").textContent = `What adds up to your ${money(ptotal)} 12-month number`;
   $("hb").setAttribute("aria-label", parts.map((p) => p.name + " " + money(p.v)).join(", "));
-  $("hb").innerHTML = parts.map((p, k) => `<div class="r" data-k="${k}"><span class="lab">${esc(p.name)}</span>
-<span class="num">${money(p.v)}</span>
-      <div class="track"><div class="fill" style="width:${p.v ? Math.max(2, (p.v / pmax) * 100) : 0}%"></div></div></div>`).join("");
+  $("hb").innerHTML = parts.map((p, k) => `<div class="r" data-k="${k}"><span>${esc(p.name)}</span><span class="num">${money(p.v)}</span>
+      <div class="track"><div class="fill" style="width:${p.v ? Math.max(3, (p.v / pmax) * 100) : 0}%"></div></div></div>`).join("");
 }
 
 $("tl").addEventListener("mousemove", (e) => {
@@ -422,38 +526,102 @@ $("hb").addEventListener("mousemove", (e) => {
 });
 $("hb").addEventListener("mouseleave", () => chartTip("tipWhere"));
 
-function urgencyChip(d) {
-  const n = daysUntil(d);
-  if (n === null) return '<span class="chip c-grey">No date</span>';
-  if (n < 0) return `<span class="chip c-grey">Passed ${-n}d ago</span>`;
-  if (n <= 30) return `<span class="chip c-red">in ${n} day${n === 1 ? "" : "s"}</span>`;
-  if (n <= 90) return `<span class="chip c-amber">in ${n} days</span>`;
-  return `<span class="chip c-green">in ${n} days</span>`;
+/* ================= Protection score ================= */
+function renderProtection(items, atRisk) {
+  const handled = items.filter((i) => i.done);
+  const subs = leakData ? leakData.subscriptions.filter((s) => state.cancel[s.name]) : [];
+  const protectedAmt = handled.reduce((a, i) => a + (+i.money_at_risk || 0), 0) + subs.reduce((a, s) => a + s.annual, 0);
+  const total = protectedAmt + atRisk;
+  const pct = total ? Math.round((protectedAmt / total) * 100) : 0;
+  const C = 2 * Math.PI * 40, off = C * (1 - pct / 100);
+  $("ring").innerHTML = `<svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true"><circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/>
+    <circle cx="48" cy="48" r="40" fill="none" stroke="#d4f56b" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 48 48)" style="transition:stroke-dashoffset .8s"/></svg><b>${pct}%</b>`;
+  $("ring").setAttribute("aria-label", `Protection score ${pct}%`);
+  $("protV").textContent = money(protectedAmt);
+  const nDated = items.filter((i) => i.dateObj).length;
+  $("protP").textContent = !nDated && !leakData ? "Upload documents to start protecting your money."
+    : protectedAmt ? `${handled.length} of ${nDated} deadlines handled${subs.length ? ` · ${subs.length} subscription${subs.length > 1 ? "s" : ""} cancelled` : ""}. Keep going!`
+    : "Mark deadlines as handled and cancel unused subscriptions to raise your score.";
 }
 
+/* ================= Calendar ================= */
+let calView = null, calSel = null;
+function calMove(d) { calView = new Date(calView.getFullYear(), calView.getMonth() + d, 1); calSel = null; renderCalendar(allItems()); }
+function renderCalendar(items) {
+  const dated = items.filter((i) => i.dateObj);
+  if (!calView) {
+    const nextUp = dated.filter((i) => !i.done && daysUntil(i.dateObj) >= 0).sort((a, b) => a.dateObj - b.dateObj)[0];
+    const base = nextUp ? nextUp.dateObj : today();
+    calView = new Date(base.getFullYear(), base.getMonth(), 1);
+    if (nextUp) calSel = nextUp.dateObj;
+  }
+  const y = calView.getFullYear(), m = calView.getMonth();
+  $("calTitle").textContent = calView.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const start = new Date(y, m, 1 - new Date(y, m, 1).getDay());
+  let html = ["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="dw">${d}</div>`).join("");
+  for (let k = 0; k < 42; k++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + k);
+    if (k >= 35 && d.getMonth() !== m) break;
+    const its = dated.filter((i) => sameDay(i.dateObj, d));
+    const cls = ["d", d.getMonth() !== m ? "out" : "", sameDay(d, today()) ? "today" : "", its.length ? "has" : "", its.length && its.every((i) => i.done) ? "done" : "", sameDay(d, calSel) ? "sel" : ""].join(" ");
+    const title = its.map((i) => `${i.label} (${money(i.money_at_risk)} at risk)`).join("\n");
+    html += its.length ? `<button class="${cls}" title="${esc(title)}" onclick="calPick(${d.getTime()})">${d.getDate()}</button>` : `<div class="${cls}">${d.getDate()}</div>`;
+  }
+  $("cal").innerHTML = html;
+  const sel = calSel ? dated.filter((i) => sameDay(i.dateObj, calSel)) : [];
+  const monthCount = dated.filter((i) => i.dateObj.getFullYear() === y && i.dateObj.getMonth() === m).length;
+  $("calInfo").innerHTML = sel.length
+    ? `<b>${fmtDate(calSel)}</b>` + sel.map((i) => `${ICONS[i.doc.doc_type] || "📄"} ${esc(i.label)} · <b style="display:inline">${money(i.money_at_risk)}</b>`).join("<br>")
+    : monthCount ? `${monthCount} deadline${monthCount > 1 ? "s" : ""} this month — tap a highlighted day.` : dated.length ? "No deadlines this month." : "Your deadlines will appear here.";
+}
+function calPick(t) { calSel = new Date(t); renderCalendar(allItems()); }
+
+/* ================= Next up ================= */
+function renderNext(items) {
+  const open = items.filter((i) => !i.done && i.dateObj && daysUntil(i.dateObj) >= 0)
+    .sort((a, b) => statusOf(a).rank - statusOf(b).rank || (a.actBy || a.dateObj) - (b.actBy || b.dateObj)).slice(0, 4);
+  $("next").innerHTML = open.length ? open.map((i) => { const s = statusOf(i); return `<button class="nx" onclick="focusItem('${i.id}')">
+      <span class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || "📄"}</span>
+      <span><b>${esc(i.label)}</b><small>${shortDate(i.actBy || i.dateObj)} · ${money(i.money_at_risk)} at risk</small></span>
+      <span class="pill ${s.cls}">${s.txt}</span></button>`; }).join("")
+    : `<div class="empty" style="padding:12px">${items.length ? "All caught up 🎉" : "Nothing yet — try the sample documents."}</div>`;
+}
+function focusItem(id) {
+  setView("deadlines");
+  const el = document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+  if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.animate([{ boxShadow: "0 0 0 3px #d4f56b" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 1600 }); }
+}
+
+function renderProCard() {
+  $("procard").innerHTML = state.pro
+    ? `<b>Pro is active ✨</b><p>Emails, call scripts and calendar reminders are unlocked.</p><button class="btn btn-dark btn-sm" onclick="exportICS()">📆 Add all to calendar</button>`
+    : `<b>Go Pro</b><p>Ready-to-send emails, call scripts and reminders for every deadline. $5/mo.</p><button class="btn btn-dark btn-sm" onclick="openUpgrade()">Get access</button>`;
+}
+
+/* ================= Deadlines ================= */
 function renderDeadlines(items) {
   const el = $("dl");
   if (!items.length) { el.innerHTML = '<div class="card empty">No deadlines yet — upload a document or try the sample documents.</div>'; return; }
-  const sorted = [...items].sort((a, b) => (a.done - b.done) || ((a.actBy || a.dateObj || 9e15) - (b.actBy || b.dateObj || 9e15)));
-  el.innerHTML = sorted.map((i) => `
-    <div class="card item ${i.done ? "done" : ""}">
-      <div class="ico">${ICONS[i.doc.doc_type] || "📄"}</div>
+  const sorted = [...items].sort((a, b) => statusOf(a).rank - statusOf(b).rank || ((a.actBy || a.dateObj || 9e15) - (b.actBy || b.dateObj || 9e15)));
+  el.innerHTML = sorted.map((i) => { const s = statusOf(i); return `
+    <div class="card item ${i.done ? "done" : ""}" data-id="${esc(i.id)}">
+      <div class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || "📄"}</div>
       <div>
-        <h3>${esc(i.label)}</h3>
-        <div class="meta">${esc(i.doc.title || i.doc.fileName)} · Deadline ${fmtDate(i.dateObj)}</div>
+        <h4>${esc(i.label)}</h4>
+        <div class="meta">${esc(i.doc.title || i.doc.fileName)} · Deadline ${fmtDate(i.dateObj)} (${whenTxt(i.dateObj)})</div>
         <div class="why">${esc(i.why)}</div>
         ${i.action ? `<div class="action"><b>Do this${i.actBy ? " by " + fmtDate(i.actBy) : ""}:</b> ${esc(i.action)}</div>` : ""}
         <div class="acts">
           ${i.draft_email ? `<button class="btn btn-ghost btn-sm" onclick="openDraft('${i.id}')">✉️ Draft email <span class="pro-badge">PRO</span></button>` : ""}
           <button class="btn btn-ghost btn-sm" onclick="exportICS('${i.id}')">📆 Remind me <span class="pro-badge">PRO</span></button>
-          <button class="btn btn-ghost btn-sm" onclick="toggleDone('${i.id}')">${i.done ? "↩︎ Undo" : "✓ Mark handled"}</button>
+          <button class="btn ${i.done ? "btn-ghost" : "btn-lime"} btn-sm" onclick="toggleDone('${i.id}')">${i.done ? "↩︎ Undo" : "✓ Mark handled"}</button>
         </div>
       </div>
       <div class="right">
-        ${urgencyChip(i.dateObj)}
+        <span class="pill ${s.cls}">${s.txt}</span>
         <div class="amt">${money(i.money_at_risk)}<small>at risk</small></div>
       </div>
-    </div>`).join("");
+    </div>`; }).join("");
 }
 
 function leakAction(kind, x) {
@@ -467,21 +635,21 @@ function leakAction(kind, x) {
 let leakDrafts = {};
 function renderLeaks(sum) {
   const el = $("leaks");
-  if (!leakData) { el.innerHTML = '<div class="card empty">Upload a bank statement (CSV) to find subscriptions, price hikes, forgotten trials, duplicate charges and fees. <br/><br/><span style="font-size:13px">Most banks: Account → Statements/Activity → Download → CSV.</span></div>'; return; }
+  if (!leakData) { el.innerHTML = '<div class="card empty">Upload a bank statement (CSV) to find subscriptions, price hikes, forgotten trials, duplicate charges and fees.<br/><span style="font-size:13px">Most banks: Account → Statements/Activity → Download → CSV.</span></div>'; return; }
   leakDrafts = {};
   const f = leakData; let k = 0;
   const btn = (kind, x) => { const id = "L" + k++; leakDrafts[id] = leakAction(kind, x); return `<button class="btn btn-ghost btn-sm" onclick="openLeakDraft('${id}')">✉️ What to say <span class="pro-badge">PRO</span></button>`; };
   const planned = f.subscriptions.filter((s) => state.cancel[s.name]).reduce((a, s) => a + s.annual, 0);
   const rows = [];
-  f.priceHikes.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-red">PRICE HIKE</span><div class="meta">${money2(x.from)} → ${money2(x.to)}</div></td><td>${money(x.annualImpact)}/yr</td><td style="text-align:right">${btn("hike", x)}</td></tr>`));
-  f.trials.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-amber">TRIAL → PAID</span><div class="meta">Free trial on ${fmtDate(new Date(x.trialDate))}, now ${money2(x.amount)}/mo</div></td><td>${money(x.annual)}/yr</td><td style="text-align:right">${btn("trial", x)}</td></tr>`));
-  f.duplicates.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-red">DUPLICATE</span><div class="meta">Charged twice on ${fmtDate(new Date(x.date))}</div></td><td>${money2(x.amount)}</td><td style="text-align:right">${btn("dup", x)}</td></tr>`));
-  if (f.fees.length) { const total = f.fees.reduce((a, x) => a + x.amount, 0); rows.push(`<tr><td><b>Bank fees</b><span class="tag c-red">FEES</span><div class="meta">${f.fees.map((x) => esc(x.name) + " " + money2(x.amount)).join(" · ")}</div></td><td>${money(sum.feeAnnual)}/yr pace</td><td style="text-align:right">${btn("fee", { count: f.fees.length, total })}</td></tr>`); }
+  f.priceHikes.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag p-act">PRICE HIKE</span><div class="meta">${money2(x.from)} → ${money2(x.to)}</div></td><td>${money(x.annualImpact)}/yr</td><td style="text-align:right">${btn("hike", x)}</td></tr>`));
+  f.trials.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag p-soon">TRIAL → PAID</span><div class="meta">Free trial on ${fmtDate(new Date(x.trialDate))}, now ${money2(x.amount)}/mo</div></td><td>${money(x.annual)}/yr</td><td style="text-align:right">${btn("trial", x)}</td></tr>`));
+  f.duplicates.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag p-act">DUPLICATE</span><div class="meta">Charged twice on ${fmtDate(new Date(x.date))}</div></td><td>${money2(x.amount)}</td><td style="text-align:right">${btn("dup", x)}</td></tr>`));
+  if (f.fees.length) { const total = f.fees.reduce((a, x) => a + x.amount, 0); rows.push(`<tr><td><b>Bank fees</b><span class="tag p-act">FEES</span><div class="meta">${f.fees.map((x) => esc(x.name) + " " + money2(x.amount)).join(" · ")}</div></td><td>${money(sum.feeAnnual)}/yr pace</td><td style="text-align:right">${btn("fee", { count: f.fees.length, total })}</td></tr>`); }
 
   el.innerHTML = `
-    <div class="savebar"><span>💚 Your savings plan (subscriptions you chose to cancel)</span><span class="v">${money(planned)}/yr</span></div>
-    <div class="card" style="margin-bottom:14px"><table class="leaks"><thead><tr><th>Money leaks we found</th><th>Cost</th><th></th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="3" class="empty">No leaks found 🎉</td></tr>'}</tbody></table></div>
-    <div class="card"><table class="leaks"><thead><tr><th>All recurring charges (${f.subscriptions.length}) — still using them?</th><th>Per year</th><th>Next charge</th><th></th></tr></thead><tbody>
+    <div class="savebar"><span>💚 Your savings plan — subscriptions you chose to cancel</span><span class="v">${money(planned)}/yr</span></div>
+    <div class="card" style="margin-bottom:14px;overflow:hidden"><table class="leaks"><thead><tr><th>Money leaks we found</th><th>Cost</th><th></th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="3" class="empty">No leaks found 🎉</td></tr>'}</tbody></table></div>
+    <div class="card" style="overflow:hidden"><table class="leaks"><thead><tr><th>All recurring charges (${f.subscriptions.length}) — still using them?</th><th>Per year</th><th>Next charge</th><th></th></tr></thead><tbody>
       ${f.subscriptions.map((s) => `<tr><td><b>${esc(s.name)}</b><div class="meta">${money2(s.amount)} ${s.cadence}</div></td><td>${money(s.annual)}</td><td>${fmtDate(new Date(s.nextDate))}</td>
       <td style="text-align:right;white-space:nowrap">${state.cancel[s.name] ? btn("cancel", s) + ` <button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">Keep</button>` : `<button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">✂️ Cancel this</button>`}</td></tr>`).join("")}
     </tbody></table></div>`;
@@ -491,30 +659,31 @@ function renderDocs() {
   const el = $("docs");
   if (!state.docs.length && !state.csv) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet.</div>'; return; }
   el.innerHTML = state.docs.map((d) => `
-    <div class="card doc"><h4>${ICONS[d.doc_type] || "📄"} ${esc(d.title || d.fileName)}</h4>
-      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div>
+    <div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile ${TILES[d.doc_type] || "t-sky"}">${ICONS[d.doc_type] || "📄"}</span><div><h4>${esc(d.title || d.fileName)}</h4>
+      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div></div></div>
       <p>${esc(d.summary)}</p>
-      ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:600;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
-    </div>`).join("") + (state.csv ? `<div class="card doc"><h4>🏦 Bank statement</h4><div class="meta">CSV · analyzed in your browser</div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
+      ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:700;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
+    </div>`).join("") + (state.csv ? `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile t-sun">🏦</span><div><h4>Bank statement</h4><div class="meta">CSV · analyzed in your browser</div></div></div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
 }
 
 /* ================= Actions ================= */
-function toggleDone(id) { state.done[id] = !state.done[id]; save(); render(); }
-function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan ✂️"); }
-function resetAll() { if (!confirmReset()) return; }
-function confirmReset() {
-  showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
-    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doReset()">Reset</button></div>`);
-  return false;
+function toggleDone(id) {
+  state.done[id] = !state.done[id]; save(); render();
+  if (state.done[id]) { const it = allItems().find((x) => x.id === id); toast(`Nice! ${money(it && it.money_at_risk)} protected 🛡️`); }
 }
-function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; save(); $("files").innerHTML = ""; closeModal(); render(); }
+function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan ✂️"); }
+function resetAll() {
+  showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-dark" onclick="doReset()">Reset</button></div>`);
+}
+function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; calView = null; calSel = null; save(); $("files").innerHTML = ""; closeModal(); render(); }
 
 function needPro() { if (state.pro) return false; openUpgrade(); return true; }
 function openUpgrade() {
   showModal(`<h3>Upgrade to Pro <span class="pro-badge">$5/mo</span></h3>
     <p class="sub" style="margin:6px 0 0">Unlock ready-to-send emails, call scripts and calendar reminders for every deadline. One avoided auto-renewal pays for years of Pro.</p>
     <div class="box" style="margin-top:14px">🧪 <b>Hackathon demo — test mode.</b> No card is charged. Click below to activate Pro on this browser.</div>
-    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Not now</button><button class="btn btn-primary" onclick="activatePro()">Activate Pro (test mode)</button></div>`);
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Not now</button><button class="btn btn-lime" onclick="activatePro()">Activate Pro (test mode)</button></div>`);
 }
 function activatePro() { state.pro = true; save(); closeModal(); toast("Pro activated ✨"); render(); }
 
@@ -526,7 +695,7 @@ function showDraft(d) {
     <label>To</label><div class="box">${esc(d.to || "—")}</div>
     <label>Subject</label><div class="box">${esc(d.subject || "")}</div>
     <label>Message</label><div class="box">${esc(d.body || "")}</div>
-    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-ghost" onclick="copyDraft()">Copy</button><a class="btn btn-primary" href="${mail}">Open in email app</a></div>`);
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-ghost" onclick="copyDraft()">Copy</button><a class="btn btn-dark" href="${mail}">Open in email app</a></div>`);
 }
 function openDraft(id) { if (needPro()) return; const it = allItems().find((x) => x.id === id); showDraft(it && it.draft_email); }
 function openLeakDraft(id) { if (needPro()) return; showDraft(leakDrafts[id]); }
@@ -566,7 +735,7 @@ function fileRow(name) {
   const row = document.createElement("div"); row.className = "file";
   row.innerHTML = `<span>${name.endsWith(".csv") ? "🏦" : "📄"}</span><span>${esc(name)}</span><span class="st"><span class="spin"></span></span>`;
   $("files").prepend(row);
-  return { ok: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--green)">✓ ${esc(m)}</span>`), err: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--red)">✕ ${esc(m)}</span>`) };
+  return { ok: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--mint-d)">✓ ${esc(m)}</span>`), err: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--peach-d)">✕ ${esc(m)}</span>`) };
 }
 const readAsDataURL = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 
@@ -609,6 +778,7 @@ async function analyzeFile(name, blob, fallback) {
       console.warn("AI analysis unavailable, using saved sample result:", e.message);
       j = Object.assign(JSON.parse(JSON.stringify(fallback)), { demo: true });
     }
+    calView = null; // re-center the calendar on the next deadline
     const doc = addDoc(name, j);
     const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
     row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`);
@@ -618,7 +788,6 @@ async function analyzeFile(name, blob, fallback) {
 async function handleFiles(list) {
   openApp();
   const files = [...list];
-  // CSV first (instant), then documents in parallel (max 3 at a time)
   for (const f of files.filter((f) => /\.csv$/i.test(f.name))) await analyzeFile(f.name, f);
   const docs = files.filter((f) => !/\.csv$/i.test(f.name));
   for (let i = 0; i < docs.length; i += 3) await Promise.all(docs.slice(i, i + 3).map((f) => analyzeFile(f.name, f)));
@@ -640,10 +809,19 @@ async function runSample() {
   b.disabled = false; b.textContent = "▶ Try with sample documents";
 }
 
+/* ================= Navigation ================= */
 function openApp(focusUpload) {
-  $("app").style.display = "block";
-  $("app").scrollIntoView({ behavior: "smooth", block: "start" });
-  if (focusUpload === true) setTimeout(() => $("fileIn").click(), 400);
+  document.body.classList.add("in-app");
+  window.scrollTo({ top: 0 });
+  if (focusUpload === true) setTimeout(() => $("fileIn").click(), 300);
+}
+function goHome() { document.body.classList.remove("in-app"); window.scrollTo({ top: 0 }); }
+function setView(t) {
+  document.querySelectorAll(".nav-i[data-t]").forEach((x) => x.classList.toggle("on", x.dataset.t === t));
+  const v = t === "overview" ? "deadlines" : t;
+  ["deadlines", "leaks", "docs"].forEach((n) => ($("t-" + n).style.display = n === v ? "block" : "none"));
+  if (t === "overview") window.scrollTo({ top: 0, behavior: "smooth" });
+  else $("views").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ================= Wiring ================= */
@@ -652,13 +830,9 @@ const drop = $("drop");
 ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
 drop.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
-document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
-  document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
-  ["deadlines", "leaks", "docs"].forEach((n) => ($("t-" + n).style.display = n === t.dataset.t ? "block" : "none"));
-}));
+document.querySelectorAll(".nav-i[data-t]").forEach((t) => t.addEventListener("click", () => setView(t.dataset.t)));
 
 load();
-if (state.docs.length || state.csv) { $("app").style.display = "block"; }
 render();
 </script>
 </body>
