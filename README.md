@@ -112,7 +112,7 @@ api/analyze.js             # AI‑анализ документа (Vercel Server
 samples/                   # 4 вымышленных PDF + bank_statement.csv + сохранённые результаты
 server.js                  # локальный сервер для разработки (без npm install)
 vercel.json                # таймаут функции 60 с
-pitch/PITCH_DECK.md        # текст pitch deck (10 слайдов)
+pitch/                     # pitch deck: PDF (10 слайдов) + PITCH_DECK.md (текст)
 ```
 
 ## Запуск локально

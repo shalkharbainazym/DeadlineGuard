@@ -5,7 +5,8 @@ Business Cup 2.0 · Money track · Nazym Shalkharbay
 
 Live: [deadlineguard-app.vercel.app](https://deadlineguard-app.vercel.app) · Code: [github.com/shalkharbainazym/DeadlineGuard](https://github.com/shalkharbainazym/DeadlineGuard)
 
-> This is the text version of the 10-slide deck (PDF), with each slide expanded a little.
+> This is the text version of the 10-slide deck, with each slide expanded a little.
+> Slides (PDF): [DeadlineGuard - adulting for the first time.pdf](DeadlineGuard%20-%20adulting%20for%20the%20first%20time.pdf)
 
 ---
 
