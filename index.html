@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeadlineGuard — never lose money on a missed deadline</title>
+<meta name="description" content="Drop your insurance, lease, receipts and bank statement. DeadlineGuard finds every deadline and money leak — and tells you exactly what to do." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0f1b2d; --muted:#5b6b82; --line:#e6eaf1; --bg:#f6f8fb; --card:#fff;
+    --brand:#2f5bea; --brand-d:#1f43c4; --brand-l:#eaf0ff;
+    --red:#e5484d; --red-l:#fdecec; --amber:#d97706; --amber-l:#fff4e0; --green:#16a34a; --green-l:#e8f7ee;
+    --radius:16px; --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{color:var(--brand);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:20;background:rgba(246,248,251,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--ink)}
+  .logo svg{width:28px;height:28px}
+  .nav-links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
+  .nav-links a{color:var(--muted)} .nav-links a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px 18px;font:600 15px Inter,sans-serif;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--brand);color:#fff} .btn-primary:hover{background:var(--brand-d)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)} .btn-ghost:hover{border-color:#cbd3e1}
+  .btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+  .btn:disabled{opacity:.6;cursor:wait}
+
+  .hero{padding:64px 0 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  .eyebrow{display:inline-flex;gap:8px;align-items:center;background:var(--brand-l);color:var(--brand-d);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px}
+  h1{font-size:48px;line-height:1.08;letter-spacing:-.02em;margin:18px 0 16px}
+  h1 em{font-style:normal;color:var(--red)}
+  .lead{font-size:18px;line-height:1.55;color:var(--muted);margin:0 0 26px;max-width:560px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:13.5px}
+  .trust span{display:flex;gap:6px;align-items:center}
+  .hero-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:22px;border:1px solid var(--line)}
+  .mini-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .mini-row:last-child{border:0}
+  .mini-row b{font-weight:600} .mini-row small{color:var(--muted);display:block;margin-top:2px}
+
+  section{padding:28px 0}
+  h2{font-size:28px;letter-spacing:-.01em;margin:0 0 6px} .sub{color:var(--muted);margin:0 0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+  /* App */
+  #app{display:none}
+  .stats{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:16px;margin-bottom:18px}
+  .stat{padding:20px}
+  .stat .k{font-size:13px;color:var(--muted);font-weight:500}
+  .stat .v{font-size:30px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
+  .stat.hero-stat{background:linear-gradient(135deg,#1b2f6b,#2f5bea);color:#fff;border:0}
+  .stat.hero-stat .k{color:#c9d6ff} .stat.hero-stat .v{font-size:40px}
+  .stat.hero-stat .note{color:#c9d6ff;font-size:12.5px;margin-top:4px}
+
+  .drop{border:2px dashed #c6d1e6;border-radius:var(--radius);background:#fbfcff;padding:26px;text-align:center;cursor:pointer;transition:.15s}
+  .drop.over,.drop:hover{border-color:var(--brand);background:var(--brand-l)}
+  .drop b{display:block;font-size:16px;margin-bottom:4px} .drop span{color:var(--muted);font-size:13.5px}
+  .files{margin-top:12px;display:grid;gap:8px}
+  .file{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:12px}
+  .file .st{margin-left:auto;font-weight:600}
+  .spin{width:14px;height:14px;border:2px solid var(--brand-l);border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .tabs{display:flex;gap:6px;margin:24px 0 14px;flex-wrap:wrap}
+  .tab{padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted);background:transparent;border:0;cursor:pointer}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+
+  .dl{display:grid;gap:12px}
+  .item{display:grid;grid-template-columns:auto 1fr auto;gap:16px;padding:18px;align-items:start}
+  .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:var(--brand-l)}
+  .item h3{margin:0;font-size:16px} .meta{color:var(--muted);font-size:13px;margin-top:3px}
+  .why{font-size:14px;line-height:1.5;margin:10px 0 6px;color:#34445c}
+  .action{font-size:14px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:6px}
+  .action b{color:var(--brand-d)}
+  .right{text-align:right;min-width:140px}
+  .amt{font-size:22px;font-weight:800} .amt small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+  .chip{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;margin-bottom:8px}
+  .c-red{background:var(--red-l);color:var(--red)} .c-amber{background:var(--amber-l);color:var(--amber)} .c-green{background:var(--green-l);color:var(--green)} .c-grey{background:#eef1f6;color:var(--muted)}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .item.done{opacity:.5} .item.done h3{text-decoration:line-through}
+  .empty{padding:28px;text-align:center;color:var(--muted)}
+
+  table.leaks{width:100%;border-collapse:collapse;font-size:14px}
+  table.leaks th{text-align:left;color:var(--muted);font-weight:600;font-size:12.5px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  table.leaks td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.leaks tr:last-child td{border:0}
+  .tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:6px}
+  .savebar{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;margin-bottom:14px;background:var(--green-l);border:1px solid #c7ecd5;border-radius:14px;font-weight:600}
+  .savebar .v{font-size:22px;color:var(--green)}
+
+  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .doc{padding:16px} .doc h4{margin:0 0 4px} .doc p{margin:6px 0;font-size:13.5px;color:#34445c;line-height:1.5}
+  .doc ul{margin:6px 0 0 18px;padding:0;font-size:13px;color:var(--muted)}
+
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .how .card{padding:22px} .how .n{width:34px;height:34px;border-radius:10px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;font-weight:800;margin-bottom:12px}
+  .how h3{margin:0 0 6px;font-size:17px} .how p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5}
+
+  .pricing{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:780px}
+  .plan{padding:26px} .plan .p{font-size:36px;font-weight:800;margin:6px 0} .plan .p small{font-size:15px;color:var(--muted);font-weight:500}
+  .plan ul{padding:0;list-style:none;margin:16px 0 20px;font-size:14.5px;line-height:2}
+  .plan.pro{border:2px solid var(--brand)}
+  .lock{filter:blur(4px);user-select:none;pointer-events:none}
+  .pro-badge{font-size:11px;font-weight:800;background:var(--brand);color:#fff;padding:2px 7px;border-radius:6px;margin-left:6px}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(15,27,45,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal{background:#fff;border-radius:18px;max-width:620px;width:100%;padding:24px;max-height:88vh;overflow:auto}
+  .modal h3{margin:0 0 4px} .modal label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin:14px 0 4px}
+  .modal .box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px;white-space:pre-wrap;line-height:1.5}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;display:none;z-index:60}
+  footer{color:var(--muted);font-size:13px;padding:40px 0;border-top:1px solid var(--line);margin-top:30px}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;padding-top:36px} h1{font-size:36px}
+    .stats{grid-template-columns:1fr 1fr} .how,.pricing{grid-template-columns:1fr}
+    .item{grid-template-columns:auto 1fr} .right{grid-column:1/-1;text-align:left}
+    .nav-links a:not(.btn){display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 3l11 4v8c0 7-4.7 12.3-11 14-6.3-1.7-11-7-11-14V7l11-4z" fill="#2f5bea"/><path d="M11 16.5l3.5 3.5L21.5 13" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      DeadlineGuard
+    </a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <button class="btn btn-primary btn-sm" onclick="runSample()">Try the demo</button>
+    </nav>
+  </div>
+</header>
+
+<main id="top" class="wrap">
+  <div class="hero">
+    <div>
+      <span class="eyebrow">🛡️ For first-time adults in the US</span>
+      <h1>Adulting gets <em>expensive</em> when you miss a deadline.</h1>
+      <p class="lead">Drop in your insurance policy, lease, receipts, benefits statement and bank statement. DeadlineGuard reads them, finds every date and leak that can cost you money, and tells you exactly what to do — before it's too late.</p>
+      <div class="cta">
+        <button id="sampleBtn" class="btn btn-primary" onclick="runSample()">▶ Try with sample documents</button>
+        <button class="btn btn-ghost" onclick="openApp(true)">Upload my documents</button>
+      </div>
+      <div class="trust">
+        <span>🔒 No bank login, ever</span><span>🗑️ Files are analyzed, never stored</span><span>💻 Your data stays in your browser</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div style="font-size:13px;color:var(--muted);font-weight:600">WHAT WE CATCH</div>
+      <div class="mini-row"><div><b>🚗 Insurance auto-renews +18%</b><small>Shop around 30 days before renewal</small></div><span class="chip c-red">$256</span></div>
+      <div class="mini-row"><div><b>🏠 Lease notice deadline</b><small>Miss it → month-to-month at +$250/mo</small></div><span class="chip c-red">$750</span></div>
+      <div class="mini-row"><div><b>🩺 FSA balance expires Dec 31</b><small>Use it or lose it</small></div><span class="chip c-amber">$612</span></div>
+      <div class="mini-row"><div><b>💻 Laptop warranty ends</b><small>Last day to add protection</small></div><span class="chip c-amber">$350+</span></div>
+      <div class="mini-row"><div><b>🔁 Forgotten subscriptions & fees</b><small>Price hikes, trials, overdrafts</small></div><span class="chip c-amber">$537/yr</span></div>
+    </div>
+  </div>
+
+  <!-- ================= APP ================= -->
+  <section id="app">
+    <div class="stats">
+      <div class="card stat hero-stat">
+        <div class="k">Money you could lose in the next 12 months</div>
+        <div class="v" id="sTotal">$0</div>
+        <div class="note" id="sTotalNote">Add documents to see your number</div>
+      </div>
+      <div class="card stat"><div class="k">Deadlines in next 90 days</div><div class="v" id="s90">0</div></div>
+      <div class="card stat"><div class="k">Subscriptions per year</div><div class="v" id="sSubs">$0</div></div>
+      <div class="card stat"><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div>
+    </div>
+
+    <div class="card" style="padding:18px">
+      <div id="drop" class="drop" onclick="document.getElementById('fileIn').click()">
+        <b>📄 Drop documents here or click to upload</b>
+        <span>Insurance policy, lease, receipt/warranty, FSA/HSA or tax notice (PDF, JPG, PNG, TXT) · Bank statement (CSV)</span>
+      </div>
+      <input id="fileIn" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" style="display:none" />
+      <div id="files" class="files"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" data-t="deadlines">📅 Deadlines</button>
+      <button class="tab" data-t="leaks">🔁 Subscriptions & leaks</button>
+      <button class="tab" data-t="docs">📁 Documents</button>
+    </div>
+
+    <div id="t-deadlines">
+      <div class="toolbar">
+        <div class="sub" style="margin:0">Sorted by what to act on first.</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="exportICS()">📆 Add all to calendar <span class="pro-badge">PRO</span></button>
+          <button class="btn btn-ghost btn-sm" onclick="resetAll()">Reset</button>
+        </div>
+      </div>
+      <div id="dl" class="dl"></div>
+    </div>
+    <div id="t-leaks" style="display:none"><div id="leaks"></div></div>
+    <div id="t-docs" style="display:none"><div id="docs" class="docs"></div></div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="sub">Three minutes once. Peace of mind all year.</p>
+    <div class="how">
+      <div class="card"><div class="n">1</div><h3>Drop your paperwork</h3><p>Upload the PDFs and photos you already have, plus a CSV statement from your bank app. No passwords, no bank connection.</p></div>
+      <div class="card"><div class="n">2</div><h3>AI finds the money traps</h3><p>We read the fine print: auto-renewals, price increases, notice periods, use-it-or-lose-it balances, warranty ends, sneaky fees.</p></div>
+      <div class="card"><div class="n">3</div><h3>Act before it costs you</h3><p>Each deadline comes with a plain-English explanation, the exact next step, a ready-to-send email and a calendar reminder.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Pricing</h2>
+    <p class="sub">One avoided auto-renewal pays for years of Pro.</p>
+    <div class="pricing">
+      <div class="card plan">
+        <div style="font-weight:700">Free</div>
+        <div class="p">$0</div>
+        <ul><li>✅ Up to 5 documents</li><li>✅ Deadline timeline & money-at-risk score</li><li>✅ Subscription & fee scan</li><li>— Ready-to-send emails & scripts</li><li>— Calendar reminders</li></ul>
+        <button class="btn btn-ghost" style="width:100%" onclick="runSample()">Try the demo</button>
+      </div>
+      <div class="card plan pro">
+        <div style="font-weight:700">Pro <span class="pro-badge">MOST POPULAR</span></div>
+        <div class="p">$5<small>/month</small></div>
+        <div style="color:var(--muted);font-size:14px">or $49/year</div>
+        <ul><li>✅ Unlimited documents</li><li>✅ AI-drafted emails & call scripts</li><li>✅ Calendar reminders for every deadline</li><li>✅ Quarterly re-scan reminders</li><li>✅ Household sharing (coming soon)</li></ul>
+        <button class="btn btn-primary" style="width:100%" onclick="openUpgrade()">Get Pro</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 DeadlineGuard · Built for Business Cup 2.0 · Sample documents are fictional. DeadlineGuard gives general information, not legal, tax or financial advice.</div>
+</footer>
+
+<div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/leaks.js"></script>
+<script>
+/* ================= State ================= */
+const FREE_DOC_LIMIT = 5;
+const SAMPLE_FILES = ["auto_insurance_renewal.pdf", "apartment_lease.pdf", "fsa_statement.pdf", "laptop_receipt.pdf", "bank_statement.csv"];
+let state = { docs: [], csv: null, done: {}, cancel: {}, pro: false };
+let leakData = null;
+
+function save() { try { localStorage.setItem("dg_state", JSON.stringify(state)); } catch (e) {} }
+function load() {
+  try { const s = JSON.parse(localStorage.getItem("dg_state") || "null"); if (s) state = Object.assign(state, s); } catch (e) {}
+  if (state.csv) { try { leakData = Leaks.detectLeaks(Leaks.normalizeTransactions(state.csv)); } catch (e) { leakData = null; } }
+}
+
+/* ================= Helpers ================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (n) => "$" + Math.round(n || 0).toLocaleString("en-US");
+const money2 = (n) => "$" + (n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const parseDay = (s) => { if (!s) return null; const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const daysUntil = (d) => (d ? Math.round((d - today()) / 86400000) : null);
+const fmtDate = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
+const ICONS = { auto_insurance: "🚗", home_insurance: "🏡", renters_insurance: "🏡", health_insurance: "🩺", warranty: "💻", lease: "🏠", tax: "🧾", fsa_hsa: "🩺", subscription: "🔁", id_document: "🪪", bill: "📨", other: "📄" };
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = "none"), 2600); }
+
+function allItems() {
+  const out = [];
+  state.docs.forEach((doc, di) => (doc.items || []).forEach((it, ii) => {
+    const id = doc.id + ":" + ii;
+    out.push(Object.assign({}, it, { id, doc, dateObj: parseDay(it.date), actBy: parseDay(it.act_by), done: !!state.done[id] }));
+  }));
+  return out;
+}
+
+/* ================= Rendering ================= */
+function animateNumber(el, to) {
+  const from = el._v || 0; const t0 = performance.now(); el._v = to;
+  const step = (t) => { const p = Math.min(1, (t - t0) / 900); el.textContent = money(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function render() {
+  const items = allItems();
+  const upcoming = items.filter((i) => !i.done && i.dateObj && daysUntil(i.dateObj) >= 0);
+  const in365 = upcoming.filter((i) => daysUntil(i.dateObj) <= 365).reduce((s, i) => s + (+i.money_at_risk || 0), 0);
+  const n90 = upcoming.filter((i) => daysUntil(i.dateObj) <= 90).length;
+  const sum = leakData ? Leaks.summarize(leakData) : null;
+  const leakYear = sum ? sum.leakAnnual : 0;
+  animateNumber($("sTotal"), in365 + leakYear);
+  $("sTotalNote").textContent = state.docs.length || sum ? `${upcoming.length} open deadlines + money leaks from your bank statement` : "Add documents to see your number";
+  $("s90").textContent = n90;
+  $("sSubs").textContent = money(sum ? sum.subsAnnual : 0);
+  $("sLeaks").textContent = money(leakYear);
+  renderDeadlines(items);
+  renderLeaks(sum);
+  renderDocs();
+}
+
+function urgencyChip(d) {
+  const n = daysUntil(d);
+  if (n === null) return '<span class="chip c-grey">No date</span>';
+  if (n < 0) return `<span class="chip c-grey">Passed ${-n}d ago</span>`;
+  if (n <= 30) return `<span class="chip c-red">in ${n} day${n === 1 ? "" : "s"}</span>`;
+  if (n <= 90) return `<span class="chip c-amber">in ${n} days</span>`;
+  return `<span class="chip c-green">in ${n} days</span>`;
+}
+
+function renderDeadlines(items) {
+  const el = $("dl");
+  if (!items.length) { el.innerHTML = '<div class="card empty">No deadlines yet — upload a document or try the sample documents.</div>'; return; }
+  const sorted = [...items].sort((a, b) => (a.done - b.done) || ((a.actBy || a.dateObj || 9e15) - (b.actBy || b.dateObj || 9e15)));
+  el.innerHTML = sorted.map((i) => `
+    <div class="card item ${i.done ? "done" : ""}">
+      <div class="ico">${ICONS[i.doc.doc_type] || "📄"}</div>
+      <div>
+        <h3>${esc(i.label)}</h3>
+        <div class="meta">${esc(i.doc.title || i.doc.fileName)} · Deadline ${fmtDate(i.dateObj)}</div>
+        <div class="why">${esc(i.why)}</div>
+        ${i.action ? `<div class="action"><b>Do this${i.actBy ? " by " + fmtDate(i.actBy) : ""}:</b> ${esc(i.action)}</div>` : ""}
+        <div class="acts">
+          ${i.draft_email ? `<button class="btn btn-ghost btn-sm" onclick="openDraft('${i.id}')">✉️ Draft email <span class="pro-badge">PRO</span></button>` : ""}
+          <button class="btn btn-ghost btn-sm" onclick="exportICS('${i.id}')">📆 Remind me <span class="pro-badge">PRO</span></button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleDone('${i.id}')">${i.done ? "↩︎ Undo" : "✓ Mark handled"}</button>
+        </div>
+      </div>
+      <div class="right">
+        ${urgencyChip(i.dateObj)}
+        <div class="amt">${money(i.money_at_risk)}<small>at risk</small></div>
+      </div>
+    </div>`).join("");
+}
+
+function leakAction(kind, x) {
+  if (kind === "hike") return { to: x.name + " customer support / retention", subject: `Price increase on my ${x.name} subscription`, body: `Hi,\n\nI noticed my ${x.name} charge went from ${money2(x.from)} to ${money2(x.to)}. I've been a loyal customer and would like to keep my plan at the previous price, or move to a cheaper plan.\n\nIf that isn't possible, please let me know how to cancel before my next billing date.\n\nThank you,\n[Your name]\n[Email on the account]` };
+  if (kind === "trial") return { to: x.name + " support", subject: `Cancel my ${x.name} membership`, body: `Hi,\n\nI signed up for a free trial of ${x.name} and did not intend to continue on a paid plan. Please cancel my membership effective immediately and refund the most recent charge of ${money2(x.amount)}, as I have not used the paid service.\n\nThank you,\n[Your name]\n[Email on the account]` };
+  if (kind === "dup") return { to: "Your bank / card issuer (dispute team)", subject: `Duplicate charge from ${x.name} on ${fmtDate(new Date(x.date))}`, body: `Hello,\n\nI was charged twice by ${x.name} on ${fmtDate(new Date(x.date))} for ${money2(x.amount)} each. I only made one purchase. Please refund the duplicate charge of ${money2(x.amount)}.\n\nAccount: [last 4 digits]\n\nThank you,\n[Your name]` };
+  if (kind === "fee") return { to: "Your bank (call the number on your card)", subject: "Request to waive fees", body: `Phone script:\n\n"Hi, I've been a customer for [X years]. I see ${x.count} fee(s) on my account totaling ${money2(x.total)} in the last few months. It was an honest mistake and I've set up alerts so it won't happen again. Could you please waive these fees as a one-time courtesy?"\n\nIf they say no: "I understand. Is there an account option without overdraft fees, or can you enable overdraft protection from my savings?"` };
+  if (kind === "cancel") return { to: x.name + " support", subject: `Cancel my ${x.name} subscription`, body: `Hi,\n\nPlease cancel my ${x.name} subscription effective at the end of the current billing period and confirm by email that no further charges will be made.\n\nThank you,\n[Your name]\n[Email on the account]` };
+}
+
+let leakDrafts = {};
+function renderLeaks(sum) {
+  const el = $("leaks");
+  if (!leakData) { el.innerHTML = '<div class="card empty">Upload a bank statement (CSV) to find subscriptions, price hikes, forgotten trials, duplicate charges and fees. <br/><br/><span style="font-size:13px">Most banks: Account → Statements/Activity → Download → CSV.</span></div>'; return; }
+  leakDrafts = {};
+  const f = leakData; let k = 0;
+  const btn = (kind, x) => { const id = "L" + k++; leakDrafts[id] = leakAction(kind, x); return `<button class="btn btn-ghost btn-sm" onclick="openLeakDraft('${id}')">✉️ What to say <span class="pro-badge">PRO</span></button>`; };
+  const planned = f.subscriptions.filter((s) => state.cancel[s.name]).reduce((a, s) => a + s.annual, 0);
+  const rows = [];
+  f.priceHikes.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-red">PRICE HIKE</span><div class="meta">${money2(x.from)} → ${money2(x.to)}</div></td><td>${money(x.annualImpact)}/yr</td><td style="text-align:right">${btn("hike", x)}</td></tr>`));
+  f.trials.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-amber">TRIAL → PAID</span><div class="meta">Free trial on ${fmtDate(new Date(x.trialDate))}, now ${money2(x.amount)}/mo</div></td><td>${money(x.annual)}/yr</td><td style="text-align:right">${btn("trial", x)}</td></tr>`));
+  f.duplicates.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag c-red">DUPLICATE</span><div class="meta">Charged twice on ${fmtDate(new Date(x.date))}</div></td><td>${money2(x.amount)}</td><td style="text-align:right">${btn("dup", x)}</td></tr>`));
+  if (f.fees.length) { const total = f.fees.reduce((a, x) => a + x.amount, 0); rows.push(`<tr><td><b>Bank fees</b><span class="tag c-red">FEES</span><div class="meta">${f.fees.map((x) => esc(x.name) + " " + money2(x.amount)).join(" · ")}</div></td><td>${money(sum.feeAnnual)}/yr pace</td><td style="text-align:right">${btn("fee", { count: f.fees.length, total })}</td></tr>`); }
+
+  el.innerHTML = `
+    <div class="savebar"><span>💚 Your savings plan (subscriptions you chose to cancel)</span><span class="v">${money(planned)}/yr</span></div>
+    <div class="card" style="margin-bottom:14px"><table class="leaks"><thead><tr><th>Money leaks we found</th><th>Cost</th><th></th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="3" class="empty">No leaks found 🎉</td></tr>'}</tbody></table></div>
+    <div class="card"><table class="leaks"><thead><tr><th>All recurring charges (${f.subscriptions.length}) — still using them?</th><th>Per year</th><th>Next charge</th><th></th></tr></thead><tbody>
+      ${f.subscriptions.map((s) => `<tr><td><b>${esc(s.name)}</b><div class="meta">${money2(s.amount)} ${s.cadence}</div></td><td>${money(s.annual)}</td><td>${fmtDate(new Date(s.nextDate))}</td>
+      <td style="text-align:right;white-space:nowrap">${state.cancel[s.name] ? btn("cancel", s) + ` <button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">Keep</button>` : `<button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">✂️ Cancel this</button>`}</td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+function renderDocs() {
+  const el = $("docs");
+  if (!state.docs.length && !state.csv) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet.</div>'; return; }
+  el.innerHTML = state.docs.map((d) => `
+    <div class="card doc"><h4>${ICONS[d.doc_type] || "📄"} ${esc(d.title || d.fileName)}</h4>
+      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}</div>
+      <p>${esc(d.summary)}</p>
+      ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:600;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
+    </div>`).join("") + (state.csv ? `<div class="card doc"><h4>🏦 Bank statement</h4><div class="meta">CSV · analyzed in your browser</div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
+}
+
+/* ================= Actions ================= */
+function toggleDone(id) { state.done[id] = !state.done[id]; save(); render(); }
+function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan ✂️"); }
+function resetAll() { if (!confirmReset()) return; }
+function confirmReset() {
+  showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doReset()">Reset</button></div>`);
+  return false;
+}
+function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; save(); $("files").innerHTML = ""; closeModal(); render(); }
+
+function needPro() { if (state.pro) return false; openUpgrade(); return true; }
+function openUpgrade() {
+  showModal(`<h3>Upgrade to Pro <span class="pro-badge">$5/mo</span></h3>
+    <p class="sub" style="margin:6px 0 0">Unlock ready-to-send emails, call scripts and calendar reminders for every deadline. One avoided auto-renewal pays for years of Pro.</p>
+    <div class="box" style="margin-top:14px">🧪 <b>Hackathon demo — test mode.</b> No card is charged. Click below to activate Pro on this browser.</div>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Not now</button><button class="btn btn-primary" onclick="activatePro()">Activate Pro (test mode)</button></div>`);
+}
+function activatePro() { state.pro = true; save(); closeModal(); toast("Pro activated ✨"); render(); }
+
+function showDraft(d) {
+  if (!d) return;
+  const mail = `mailto:?subject=${encodeURIComponent(d.subject || "")}&body=${encodeURIComponent(d.body || "")}`;
+  window._draftText = `Subject: ${d.subject || ""}\n\n${d.body || ""}`;
+  showModal(`<h3>✉️ Ready to send</h3>
+    <label>To</label><div class="box">${esc(d.to || "—")}</div>
+    <label>Subject</label><div class="box">${esc(d.subject || "")}</div>
+    <label>Message</label><div class="box">${esc(d.body || "")}</div>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-ghost" onclick="copyDraft()">Copy</button><a class="btn btn-primary" href="${mail}">Open in email app</a></div>`);
+}
+function openDraft(id) { if (needPro()) return; const it = allItems().find((x) => x.id === id); showDraft(it && it.draft_email); }
+function openLeakDraft(id) { if (needPro()) return; showDraft(leakDrafts[id]); }
+function copyDraft() { navigator.clipboard?.writeText(window._draftText || "").then(() => toast("Copied ✓")); }
+
+function showModal(html) { $("modalBody").innerHTML = html; $("modal").style.display = "flex"; }
+function closeModal() { $("modal").style.display = "none"; }
+$("modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
+
+/* ================= Calendar export (.ics) ================= */
+function icsEsc(s) { return String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+function ymd(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0"); }
+function exportICS(id) {
+  if (needPro()) return;
+  let items = allItems().filter((i) => !i.done && (i.actBy || i.dateObj));
+  if (id) items = items.filter((i) => i.id === id);
+  if (!items.length) return toast("No upcoming deadlines to add");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const ev = items.map((i) => {
+    const d = i.actBy && i.actBy < (i.dateObj || i.actBy) ? i.actBy : i.dateObj || i.actBy;
+    const end = new Date(d); end.setDate(end.getDate() + 1);
+    return ["BEGIN:VEVENT", `UID:${i.id.replace(/[^a-z0-9]/gi, "")}-${ymd(d)}@deadlineguard`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
+      `SUMMARY:${icsEsc("⚠️ " + i.label + " (" + money(i.money_at_risk) + " at risk)")}`,
+      `DESCRIPTION:${icsEsc((i.action ? "Do this: " + i.action + "\n" : "") + "Deadline: " + fmtDate(i.dateObj) + "\n" + (i.why || ""))}`,
+      "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY", `DESCRIPTION:${icsEsc(i.label)}`, "END:VALARM", "END:VEVENT"].join("\r\n");
+  });
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//DeadlineGuard//EN", "CALSCALE:GREGORIAN", ...ev, "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  a.download = id ? "deadline.ics" : "deadlineguard-reminders.ics";
+  a.click();
+  toast(`${items.length} reminder${items.length > 1 ? "s" : ""} downloaded — open the file to add to your calendar`);
+}
+
+/* ================= Upload & analysis ================= */
+function fileRow(name) {
+  const row = document.createElement("div"); row.className = "file";
+  row.innerHTML = `<span>${name.endsWith(".csv") ? "🏦" : "📄"}</span><span>${esc(name)}</span><span class="st"><span class="spin"></span></span>`;
+  $("files").prepend(row);
+  return { ok: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--green)">✓ ${esc(m)}</span>`), err: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--red)">✕ ${esc(m)}</span>`) };
+}
+const readAsDataURL = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+
+async function analyzeFile(name, blob) {
+  const row = fileRow(name);
+  try {
+    if (/\.csv$/i.test(name)) {
+      const text = await blob.text();
+      const tx = Leaks.normalizeTransactions(text);
+      leakData = Leaks.detectLeaks(tx); state.csv = text; save(); render();
+      const s = Leaks.summarize(leakData);
+      row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`);
+      return;
+    }
+    if (!state.pro && state.docs.length >= FREE_DOC_LIMIT) { row.err("Free plan limit (5 docs) — upgrade to Pro"); openUpgrade(); return; }
+    if (blob.size > 4 * 1024 * 1024) throw new Error("File is over 4 MB");
+    let payload;
+    if (/\.txt$/i.test(name)) payload = { text: await blob.text(), fileName: name };
+    else {
+      const url = await readAsDataURL(blob);
+      const mediaType = url.slice(5, url.indexOf(";")) || (name.endsWith(".pdf") ? "application/pdf" : "image/jpeg");
+      payload = { data: url.split(",")[1], mediaType: /\.pdf$/i.test(name) ? "application/pdf" : mediaType, fileName: name };
+    }
+    const r = await fetch("api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+    const j = await r.json().catch(() => ({ error: "Server error " + r.status }));
+    if (!r.ok || j.error) throw new Error(j.error || "Analysis failed");
+    const doc = Object.assign(j, { id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), fileName: name });
+    state.docs.push(doc); save(); render();
+    const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
+    row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk`);
+  } catch (e) { row.err(e.message || String(e)); }
+}
+
+async function handleFiles(list) {
+  openApp();
+  const files = [...list];
+  // CSV first (instant), then documents in parallel (max 3 at a time)
+  for (const f of files.filter((f) => /\.csv$/i.test(f.name))) await analyzeFile(f.name, f);
+  const docs = files.filter((f) => !/\.csv$/i.test(f.name));
+  for (let i = 0; i < docs.length; i += 3) await Promise.all(docs.slice(i, i + 3).map((f) => analyzeFile(f.name, f)));
+}
+
+async function runSample() {
+  const b = $("sampleBtn"); b.disabled = true; b.textContent = "Analyzing sample documents…";
+  openApp();
+  const already = new Set(state.docs.map((d) => d.fileName));
+  const todo = SAMPLE_FILES.filter((n) => !(n.endsWith(".csv") ? state.csv : already.has(n)));
+  if (!todo.length) { toast("Sample documents are already analyzed"); }
+  const blobs = await Promise.all(todo.map(async (n) => ({ name: n, blob: await (await fetch("samples/" + n)).blob() })));
+  const csv = blobs.filter((x) => x.name.endsWith(".csv")); const docs = blobs.filter((x) => !x.name.endsWith(".csv"));
+  for (const x of csv) await analyzeFile(x.name, x.blob);
+  await Promise.all(docs.map((x) => analyzeFile(x.name, x.blob)));
+  b.disabled = false; b.textContent = "▶ Try with sample documents";
+}
+
+function openApp(focusUpload) {
+  $("app").style.display = "block";
+  $("app").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (focusUpload === true) setTimeout(() => $("fileIn").click(), 400);
+}
+
+/* ================= Wiring ================= */
+$("fileIn").addEventListener("change", (e) => { handleFiles(e.target.files); e.target.value = ""; });
+const drop = $("drop");
+["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
+  ["deadlines", "leaks", "docs"].forEach((n) => ($("t-" + n).style.display = n === t.dataset.t ? "block" : "none"));
+}));
+
+load();
+if (state.docs.length || state.csv) { $("app").style.display = "block"; }
+render();
+</script>
+</body>
+</html>
