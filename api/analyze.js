@@ -5,14 +5,16 @@
 //   OPENAI_API_KEY      (optional: OPENAI_MODEL, default "gpt-4.1-mini")
 // The uploaded file is sent to the AI provider for analysis and is NOT stored anywhere.
 
-const PROMPT = (today) => `You are DeadlineGuard, an assistant that protects young US adults from losing money on "adulting" paperwork.
+const PROMPT = (today, state) => `You are DeadlineGuard, an assistant that protects young US adults from losing money on "adulting" paperwork.
 Today's date is ${today}.
+${state ? `The user lives in the US state ${state}. Take the state into account in your estimates (e.g. typical insurance costs, rent levels), but do not cite or invent specific state laws.` : "The user's state is unknown."}
 
 Read the attached document (insurance policy, warranty/receipt, lease, tax notice, FSA/HSA statement, ID document, subscription email, bill, etc.).
 Find every DATE that can cost the user money if missed (renewals, auto-renewals, expirations, payment due dates, notice deadlines, use-it-or-lose-it deadlines, price increases).
 
 Return ONLY valid JSON, no markdown, with exactly this shape:
 {
+  "user_state": "two-letter US state code of the USER's own address found in the document (not the company's), or null",
   "doc_type": "auto_insurance | home_insurance | renters_insurance | health_insurance | warranty | lease | tax | fsa_hsa | subscription | id_document | bill | other",
   "title": "short human title, e.g. 'Auto insurance — Brightline'",
   "provider": "company name or null",
@@ -38,6 +40,7 @@ Rules:
 - Use only dates that appear in the document or follow directly from it (e.g. "60 days before lease end"). Never invent dates.
 - money_at_risk is a realistic US-dollar estimate of what the user loses if they do nothing (e.g. premium increase, forfeited balance, penalty, out-of-warranty repair cost). Use 0 if nothing is at risk. Explain the basis in "why".
 - Never double count: if two items describe the same risk (e.g. "warranty ends" and "last day to buy extended protection"), put the money at risk on ONE item and use 0 on the other. The price of an optional product the user could buy is NOT money at risk.
+- When a rule or amount depends on state law (notice periods, late fees, security deposits, insurance minimums, taxes), say so in "why" and end it with "General info — verify for your state." Never state exact state laws.
 - Write for a busy 28-year-old, plain English, no jargon.
 - If the document is not a personal finance/admin document, return doc_type "other" and an empty items array.`;
 
@@ -51,7 +54,7 @@ function cleanJson(text) {
   return JSON.parse(t.slice(first, last + 1));
 }
 
-async function callAnthropic({ data, mediaType, text, fileName, today }) {
+async function callAnthropic({ data, mediaType, text, fileName, today, state }) {
   const content = [];
   if (text) {
     content.push({ type: "text", text: `Document "${fileName}":\n\n${text}` });
@@ -60,7 +63,7 @@ async function callAnthropic({ data, mediaType, text, fileName, today }) {
   } else {
     content.push({ type: "image", source: { type: "base64", media_type: mediaType, data } });
   }
-  content.push({ type: "text", text: PROMPT(today) });
+  content.push({ type: "text", text: PROMPT(today, state) });
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -82,11 +85,11 @@ async function callAnthropic({ data, mediaType, text, fileName, today }) {
 }
 
 // Google Gemini — has a free tier (key from aistudio.google.com, no card needed)
-async function callGemini({ data, mediaType, text, fileName, today }) {
+async function callGemini({ data, mediaType, text, fileName, today, state }) {
   const parts = [];
   if (text) parts.push({ text: `Document "${fileName}":\n\n${text}` });
   else parts.push({ inline_data: { mime_type: mediaType, data } });
-  parts.push({ text: PROMPT(today) });
+  parts.push({ text: PROMPT(today, state) });
 
   const models = [process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
   // Free tier sometimes answers 503 "high demand" / 429: retry once, then try the next model
@@ -116,7 +119,7 @@ async function callGemini({ data, mediaType, text, fileName, today }) {
   throw lastErr;
 }
 
-async function callOpenAI({ data, mediaType, text, fileName, today }) {
+async function callOpenAI({ data, mediaType, text, fileName, today, state }) {
   const content = [];
   if (text) {
     content.push({ type: "text", text: `Document "${fileName}":\n\n${text}` });
@@ -125,7 +128,7 @@ async function callOpenAI({ data, mediaType, text, fileName, today }) {
   } else {
     content.push({ type: "image_url", image_url: { url: `data:${mediaType};base64,${data}` } });
   }
-  content.push({ type: "text", text: PROMPT(today) });
+  content.push({ type: "text", text: PROMPT(today, state) });
 
   const r = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -151,13 +154,14 @@ module.exports = async function handler(req, res) {
     let body = req.body;
     if (typeof body === "string") body = JSON.parse(body);
     const { data, mediaType, text, fileName } = body || {};
+    const state = /^[A-Z]{2}$/.test(String((body || {}).state || "")) ? body.state : null;
     if (!data && !text) throw new Error("No file received");
 
     const allowed = ["application/pdf", "image/png", "image/jpeg", "image/webp", "image/gif"];
     if (!text && !allowed.includes(mediaType)) throw new Error(`Unsupported file type: ${mediaType}. Use PDF, PNG, JPG or TXT.`);
 
     const today = new Date().toISOString().slice(0, 10);
-    const args = { data, mediaType, text, fileName, today };
+    const args = { data, mediaType, text, fileName, today, state };
 
     let result;
     if (process.env.ANTHROPIC_API_KEY) result = await callAnthropic(args);

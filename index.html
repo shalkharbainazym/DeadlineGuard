@@ -241,6 +241,10 @@
   .ins b{display:block;font-size:13px;line-height:1.35} .ins span{font-size:12.5px;color:#3d3f52;line-height:1.45}
   @media (max-width:1180px){ .insights{grid-template-columns:1fr} }
   @media (max-width:560px){ .spend{grid-template-columns:1fr;justify-items:center} .legend{width:100%} }
+  .state-card h3{font-size:16px} .st-p{margin:0 0 10px;font-size:13px;line-height:1.55;color:#3d3f52}
+  .st-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .st-note{display:inline-block;margin-top:6px;font-size:11.5px;color:var(--sun-d);background:var(--sun);border-radius:8px;padding:3px 8px}
+  .sel{font:600 14px "Plus Jakarta Sans",sans-serif;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink);max-width:100%;min-width:220px}
   .lost h3{font-size:19px} .lost h3 em{font-style:normal;color:var(--peach-d)}
   .lost-rows{display:grid;gap:10px}
   .lost-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;background:var(--soft);border-radius:16px;padding:12px 14px}
@@ -546,6 +550,7 @@
         </div>
 
         <div class="colR">
+          <div class="card panel state-card" id="stateCard"></div>
           <div class="card protect">
             <div class="ring" id="ring"></div>
             <div><h3>Money protected</h3><div class="v" id="protV">$0</div><p id="protP">Mark deadlines as handled and cancel unused subscriptions to raise your score.</p></div>
@@ -580,7 +585,7 @@
 <div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
 <div class="toast" id="toast"></div>
 
-<script src="js/leaks.js?v=5"></script>
+<script src="js/leaks.js?v=6"></script>
 <script>
 /* ================= State ================= */
 const FREE_DOC_LIMIT = 5;
@@ -671,6 +676,7 @@ function render() {
   renderSettings();
   renderLost();
   renderSpending();
+  renderStateCard();
 }
 
 /* ================= Charts ================= */
@@ -950,6 +956,7 @@ function renderDeadlines(items) {
       <div>
         <h4>${esc(i.label)}</h4>
         <div class="meta">${esc(i.doc.title || i.doc.fileName)} · Deadline ${fmtDate(i.dateObj)} (${whenTxt(i.dateObj)})</div>
+        ${STATE_DEP.includes(i.doc.doc_type) && !/verify for your state/i.test(i.why || "") ? `<div class="st-note">${STATE_NOTE}${currentState().code ? ` (${US_STATES[currentState().code]})` : ""}.</div>` : ""}
         <div class="why">${esc(i.why)}</div>
         ${i.action ? `<div class="action"><b>Do this${i.actBy ? " by " + fmtDate(i.actBy) : ""}:</b> ${esc(i.action)}</div>` : ""}
         <div class="acts">
@@ -1233,6 +1240,7 @@ async function analyzeFile(name, blob, fallback) {
     }
     let j;
     try {
+      const st = currentState().code; if (st) payload.state = st; // lets the AI tailor estimates to the user's state
       const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
       const r = await fetch("api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload), signal: ctrl.signal });
       clearTimeout(timer);
@@ -1266,7 +1274,7 @@ async function runSample() {
   const todo = SAMPLE_FILES.filter((n) => !(n.endsWith(".csv") ? state.csv : already.has(n)));
   if (!todo.length) { toast("Sample documents are already analyzed"); }
   try {
-    const saved = await fetch("samples/sample_results.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    const saved = await fetch("samples/sample_results.json?v=2").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
     const blobs = await Promise.all(todo.map(async (n) => ({ name: n, blob: await (await fetch("samples/" + n)).blob() })));
     const csv = blobs.filter((x) => x.name.endsWith(".csv")); const docs = blobs.filter((x) => !x.name.endsWith(".csv"));
     for (const x of csv) await analyzeFile(x.name, x.blob);
@@ -1299,6 +1307,34 @@ function nextBilling() {
   while (d <= today()) d = addMonths(start, ++n);
   return d;
 }
+/* ================= US state ================= */
+const US_STATES = { AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado", CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming" };
+// States with no state income tax on wages (general reference, not tax advice)
+const NO_WAGE_TAX = ["AK", "FL", "NV", "NH", "SD", "TN", "TX", "WA", "WY"];
+// Document types whose rules depend on state law
+const STATE_DEP = ["lease", "auto_insurance", "home_insurance", "renters_insurance", "health_insurance", "tax"];
+const STATE_NOTE = "General info — verify for your state";
+function detectedState() { const d = state.docs.find((x) => US_STATES[x.user_state]); return d ? d.user_state : null; }
+function currentState() {
+  if (state.userState && US_STATES[state.userState]) return { code: state.userState, source: "selected" };
+  const det = detectedState();
+  return det ? { code: det, source: "detected" } : { code: null, source: "none" };
+}
+function setUserState(v) { if (v === "auto") delete state.userState; else state.userState = v; save(); render(); toast(v === "auto" ? "State: auto-detect from documents" : `State set to ${US_STATES[v]}`); }
+function stateHint() {
+  const s = currentState();
+  if (!s.code) return { h: "Add your state", p: "Pick your state in Settings — some deadlines and costs depend on it.", tax: null };
+  const name = US_STATES[s.code], noTax = NO_WAGE_TAX.includes(s.code);
+  return { h: `${name}${s.source === "detected" ? " · detected from your documents" : ""}`, tax: noTax,
+    p: noTax ? `${name} has no state income tax on wages — no state withholding on your paycheck. Your lease and insurance rules still depend on ${name} law.`
+             : `${name} has a state income tax — keep your W-2 and receipts, and check your state's filing deadline. Lease and insurance rules depend on ${name} law.` };
+}
+function renderStateCard() {
+  const h = stateHint();
+  $("stateCard").innerHTML = `<div class="ph"><div><div class="cap" style="margin:0 0 3px">Your state</div><h3>${esc(h.h)}</h3></div>${h.tax === true ? '<span class="pill p-done">No wage tax</span>' : h.tax === false ? '<span class="pill p-up">State income tax</span>' : ""}</div>
+    <p class="st-p">${esc(h.p)}</p><div class="st-foot"><span class="meta">${STATE_NOTE}</span><button class="btn btn-ghost btn-sm" onclick="setView('settings')">Change</button></div>`;
+}
+
 const FAQ = [
   ["Where is my data stored?", "Only in this browser. Your results are saved in this browser's local storage and your uploaded files in its IndexedDB — on this device only. We have no database and no account, so nothing is kept on our servers."],
   ["What does the AI do with my files?", "When you upload a document, it is sent once to our AI provider to read the dates, amounts and fine print. The result comes back to your browser. The file is not stored on our server. Your bank CSV is never uploaded at all — it is analyzed right in your browser."],
@@ -1320,7 +1356,16 @@ function renderSettings() {
         <div class="kv"><div>Documents used<b>${Math.min(used, FREE_DOC_LIMIT)} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
         <div class="set-row"><span class="cap">Pro: unlimited documents, ready emails, call scripts and reminders.</span><button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade to Pro — $5/mo</button></div>
       </div>`;
-  $("settings").innerHTML = plan + `
+  const cs = currentState(), det = detectedState();
+  const stateSel = `<div class="card set-card">
+      <div class="set-row"><div><h4>Your state</h4><div class="cap">Used to tailor AI estimates. ${STATE_NOTE}.</div></div>
+        <select class="sel" aria-label="Your US state" onchange="setUserState(this.value)">
+          <option value="auto" ${!state.userState ? "selected" : ""}>Auto-detect from documents${det ? ` (${US_STATES[det]})` : " (not found yet)"}</option>
+          ${Object.entries(US_STATES).map(([c, n]) => `<option value="${c}" ${state.userState === c ? "selected" : ""}>${n}</option>`).join("")}
+        </select></div>
+      ${cs.code ? `<div class="cap" style="margin-top:10px">${US_STATES[cs.code]}: ${NO_WAGE_TAX.includes(cs.code) ? "no state income tax on wages" : "has a state income tax"}. No state income tax on wages: ${NO_WAGE_TAX.join(", ")}.</div>` : ""}
+    </div>`;
+  $("settings").innerHTML = plan + stateSel + `
     <div class="card set-card">
       <h4>Help & FAQ</h4>
       <div class="faq">${FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>

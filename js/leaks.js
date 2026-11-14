@@ -210,7 +210,8 @@
     f.duplicates.forEach((x) => rows.push({ kind: "dup", name: x.name, detail: "Charged twice for the same purchase", amount: x.amount, date: x.date, recoverable: true }));
     f.trials.forEach((x) => rows.push({ kind: "trial", name: x.name, detail: `Free trial turned paid — ${x.charges || 0} charge${x.charges === 1 ? "" : "s"} so far`, amount: x.paidSoFar || 0, recoverable: false, ref: x }));
     f.priceHikes.forEach((x) => rows.push({ kind: "hike", name: x.name, detail: `Price went up $${x.from.toFixed(2)} → $${x.to.toFixed(2)} — extra paid since`, amount: x.extraSoFar || 0, recoverable: false, ref: x }));
-    const months = f.period ? Math.max(1, Math.round((f.period.to - f.period.from) / DAY / 30.4)) : 1;
+    // calendar months covered by the statement (same rule as spending())
+    const months = f.period ? Math.max(1, (f.period.to.getUTCFullYear() - f.period.from.getUTCFullYear()) * 12 + f.period.to.getUTCMonth() - f.period.from.getUTCMonth() + 1) : 1;
     const total = round2(rows.reduce((s, r) => s + r.amount, 0));
     return { total, months, rows: rows.filter((r) => r.amount > 0).sort((a, b) => b.amount - a.amount),
       recoverable: round2(rows.filter((r) => r.recoverable).reduce((s, r) => s + r.amount, 0)) };

@@ -1,6 +1,7 @@
 {
   "_note": "Pre-computed analysis of the fictional sample documents, in the exact shape returned by api/analyze.js. Used by the demo only as a fallback when the AI endpoint is unavailable, so judges always see a working end-to-end demo.",
   "auto_insurance_renewal.pdf": {
+    "user_state": "TX",
     "doc_type": "auto_insurance",
     "title": "Auto insurance — Brightline",
     "provider": "Brightline Auto Insurance",
@@ -29,7 +30,7 @@
         "amount": null,
         "money_at_risk": 0,
         "risk_level": "low",
-        "why": "$30k/$60k bodily injury and $25k property damage may not cover a serious accident; anything above the limit is paid by you. Not a direct cost now, but worth reviewing while you shop.",
+        "why": "$30k/$60k bodily injury and $25k property damage may not cover a serious accident; anything above the limit is paid by you. Not a direct cost now, but worth reviewing while you shop. General info — verify for your state.",
         "action": "Ask for a quote with 100/300/100 limits when you compare prices",
         "act_by": "2026-11-28",
         "draft_email": null
@@ -43,6 +44,7 @@
     ]
   },
   "apartment_lease.pdf": {
+    "user_state": "TX",
     "doc_type": "lease",
     "title": "Lease — Oakwood Apartments",
     "provider": "Oakwood Apartments",
@@ -55,7 +57,7 @@
         "amount": 2100,
         "money_at_risk": 750,
         "risk_level": "high",
-        "why": "Without written notice 60 days before the lease ends (Jan 31, 2027), the lease converts to month-to-month at $2,100 instead of $1,850, and you owe rent for the full notice period. At risk ≈ $250 × 3 months.",
+        "why": "Without written notice 60 days before the lease ends (Jan 31, 2027), the lease converts to month-to-month at $2,100 instead of $1,850, and you owe rent for the full notice period. At risk ≈ $250 × 3 months. General info — verify for your state.",
         "action": "Decide to renew or move, then send written notice to the landlord and keep a copy",
         "act_by": "2026-11-25",
         "draft_email": {
@@ -121,6 +123,7 @@
     ]
   },
   "laptop_receipt.pdf": {
+    "user_state": "TX",
     "doc_type": "warranty",
     "title": "Laptop warranty — Lumen Pro 15",
     "provider": "Northgate Electronics",
