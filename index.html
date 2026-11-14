@@ -165,6 +165,8 @@
   .files{margin-top:10px;display:grid;gap:8px}
   .file{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;background:var(--soft);border-radius:12px}
   .file .st{margin-left:auto;font-weight:700;text-align:right}
+  .quota{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .quota b{color:var(--ink)} .quota .full b{color:var(--peach-d)}
   .file-x{flex:none;width:32px;height:32px;border-radius:10px;border:0;background:#fff;color:var(--muted);display:grid;place-items:center;cursor:pointer}
   .file-x:hover{background:var(--peach);color:var(--peach-d)} .file-x .i{width:16px;height:16px}
   .spin{width:14px;height:14px;border:2px solid var(--lav-l);border-top-color:var(--lav-d);border-radius:50%;animation:sp 1s linear infinite;display:inline-block}
@@ -530,6 +532,7 @@
               <b><svg class="i"><use href="#i-upload"/></svg> Drop documents here or click to upload</b>
               <span>Insurance policy, lease, receipt/warranty, FSA/HSA or tax notice (PDF, JPG, PNG, TXT) · Bank statement (CSV)</span>
             </div>
+            <div class="quota" id="quota"></div>
             <input id="fileIn" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" style="display:none" />
             <div id="files" class="files"></div>
           </div>
@@ -679,6 +682,7 @@ function render() {
   renderLost();
   renderSpending();
   renderStateCard();
+  renderQuota();
 }
 
 /* ================= Charts ================= */
@@ -1228,6 +1232,14 @@ function addDoc(name, j) {
 }
 
 // fallback: pre-computed result for the bundled sample documents, used only if the AI endpoint fails
+// Free plan counter under the upload zone (the bank CSV is not counted)
+function renderQuota() {
+  const n = state.docs.length, el = $("quota");
+  if (state.pro) { el.innerHTML = `<span>Pro · unlimited documents</span>`; return; }
+  const full = n >= FREE_DOC_LIMIT;
+  el.innerHTML = `<span class="${full ? "full" : ""}"><b>${n} of ${FREE_DOC_LIMIT}</b> documents used on Free${n > FREE_DOC_LIMIT ? " (added before the limit)" : ""} · bank statement (CSV) doesn't count</span>
+    ${full ? `<button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade for unlimited</button>` : ""}`;
+}
 let pendingDocs = 0; // documents reserved against the Free limit while their analysis is running
 async function analyzeFile(name, blob, fallback) {
   const row = fileRow(name);
