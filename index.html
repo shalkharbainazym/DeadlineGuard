@@ -83,6 +83,7 @@
   .nav-i{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:999px;border:0;background:transparent;color:#c4c6d6;font-weight:600;font-size:14px;cursor:pointer;text-align:left}
   .nav-i:hover{color:#fff;background:rgba(255,255,255,.06)}
   .nav-i.on{background:var(--lime);color:var(--navy)}
+  .nav-i .ic{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .nav-i .n{margin-left:auto;background:var(--peach);color:var(--peach-d);font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px}
   .nav-i.on .n{background:var(--navy);color:var(--lime)}
   .side .grow{flex:1}
@@ -290,11 +291,11 @@
         <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l8 3v6c0 5.2-3.4 9.1-8 10.5-4.6-1.4-8-5.3-8-10.5v-6l8-3z" fill="#1e1f2e"/><path d="M8.3 12.3l2.6 2.6 5-5.4" stroke="#d4f56b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span>DeadlineGuard</span>
       </button>
-      <button class="nav-i on" data-t="overview">🏠 Dashboard</button>
-      <button class="nav-i" data-t="deadlines">📅 Deadlines <span class="n" id="nDl" style="display:none"></span></button>
-      <button class="nav-i" data-t="leaks">🔁 Subscriptions</button>
-      <button class="nav-i" data-t="docs">📁 Documents</button>
-      <button class="nav-i" onclick="exportICS()">📆 Add to calendar</button>
+      <button class="nav-i on" data-t="overview"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Dashboard</button>
+      <button class="nav-i" data-t="deadlines"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Deadlines <span class="n" id="nDl" style="display:none"></span></button>
+      <button class="nav-i" data-t="leaks"><svg class="ic" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>Subscriptions</button>
+      <button class="nav-i" data-t="docs"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Documents</button>
+      <button class="nav-i" onclick="exportICS()"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Add to calendar</button>
       <div class="grow"></div>
       <div class="procard" id="procard"></div>
     </aside>
@@ -594,7 +595,7 @@ function focusItem(id) {
 
 function renderProCard() {
   $("procard").innerHTML = state.pro
-    ? `<b>Pro is active ✨</b><p>Emails, call scripts and calendar reminders are unlocked.</p><button class="btn btn-dark btn-sm" onclick="exportICS()">📆 Add all to calendar</button>`
+    ? `<b>Pro is active</b><p>Emails, call scripts and calendar reminders are unlocked.</p><button class="btn btn-dark btn-sm" onclick="exportICS()">Add all to calendar</button>`
     : `<b>Go Pro</b><p>Ready-to-send emails, call scripts and reminders for every deadline. $5/mo.</p><button class="btn btn-dark btn-sm" onclick="openUpgrade()">Get access</button>`;
 }
 
