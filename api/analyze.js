@@ -37,6 +37,7 @@ Return ONLY valid JSON, no markdown, with exactly this shape:
 Rules:
 - Use only dates that appear in the document or follow directly from it (e.g. "60 days before lease end"). Never invent dates.
 - money_at_risk is a realistic US-dollar estimate of what the user loses if they do nothing (e.g. premium increase, forfeited balance, penalty, out-of-warranty repair cost). Use 0 if nothing is at risk. Explain the basis in "why".
+- Never double count: if two items describe the same risk (e.g. "warranty ends" and "last day to buy extended protection"), put the money at risk on ONE item and use 0 on the other. The price of an optional product the user could buy is NOT money at risk.
 - Write for a busy 28-year-old, plain English, no jargon.
 - If the document is not a personal finance/admin document, return doc_type "other" and an empty items array.`;
 
@@ -88,8 +89,13 @@ async function callGemini({ data, mediaType, text, fileName, today }) {
   parts.push({ text: PROMPT(today) });
 
   const models = [process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
+  // Free tier sometimes answers 503 "high demand" / 429: retry once, then try the next model
+  const attempts = [];
+  for (const m of [...new Set(models)]) attempts.push(m, m);
   let lastErr;
-  for (const model of [...new Set(models)]) {
+  for (let a = 0; a < attempts.length; a++) {
+    const model = attempts[a];
+    if (a % 2 === 1) await new Promise((res) => setTimeout(res, 1200));
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
@@ -104,7 +110,8 @@ async function callGemini({ data, mediaType, text, fileName, today }) {
       return cleanJson(out);
     }
     lastErr = new Error(j?.error?.message || `Gemini error ${r.status}`);
-    if (r.status !== 404) break; // only fall back to the next model if this one doesn't exist
+    if (r.status === 404) { a += a % 2 === 0 ? 1 : 0; continue; } // model doesn't exist: skip its retry
+    if (![429, 500, 503].includes(r.status)) break; // bad key / bad request: retrying won't help
   }
   throw lastErr;
 }
