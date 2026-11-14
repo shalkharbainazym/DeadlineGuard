@@ -216,7 +216,36 @@
       recoverable: round2(rows.filter((r) => r.recoverable).reduce((s, r) => s + r.amount, 0)) };
   }
 
-  const api = { parseCSV, normalizeTransactions, merchantKey, detectLeaks, summarize, alreadyLost };
+  // ---------- Spending categories (simple keyword rules, first match wins) ----------
+  const SPEND_CATS = [
+    ["Bank fees", FEE_RE],
+    ["Food delivery & dining", /(UBER ?EATS|DOORDASH|GRUBHUB|POSTMATES|SEAMLESS|CAVIAR|STARBUCKS|DUNKIN|MCDONALD|CHIPOTLE|CHICK-?FIL|TACO BELL|WENDY|BURGER|PIZZA|SUBWAY|PANERA|SWEETGREEN|RESTAURANT|CAFE|COFFEE|DINER|GRILL|KITCHEN)/i],
+    ["Subscriptions", /(NETFLIX|SPOTIFY|HULU|AUDIBLE|APPLE\.COM\/BILL|APPLE BILL|ITUNES|ADOBE|DISNEY|HBO|\bMAX\b|YOUTUBE|PRIME VIDEO|PARAMOUNT|PEACOCK|DROPBOX|MICROSOFT|ICLOUD|CHATGPT|OPENAI|FITNESS|\bGYM\b|PATREON|SIRIUS)/i],
+    ["Housing", /(\bRENT\b|MORTGAGE|\bAPTS?\b|APARTMENT|PROPERTY|\bHOA\b|COMCAST|XFINITY|SPECTRUM|INTERNET|ELECTRIC|UTILIT|WATER|PG&E|CON ED|ENERGY|VERIZON|AT&T|T-MOBILE)/i],
+    ["Groceries", /(TRADER JOE|SAFEWAY|KROGER|WHOLE FOODS|ALDI|PUBLIX|H-E-B|\bHEB\b|WEGMANS|SPROUTS|GROCERY|SUPERMARKET|FOOD LION|ALBERTSONS|COSTCO)/i],
+    ["Transport", /(UBER|LYFT|CHEVRON|SHELL|EXXON|MOBIL|\bBP\b|SUNOCO|VALERO|\bGAS\b|FUEL|PARKING|TRANSIT|METRO|TOLL|\bDMV\b|GEICO|PROGRESSIVE|STATE FARM)/i],
+    ["Shopping", /(AMAZON|AMZN|TARGET|WALMART|BEST BUY|EBAY|ETSY|IKEA|HOME DEPOT|LOWE'?S|NIKE|ZARA|H&M|MACY|NORDSTROM|SEPHORA|ULTA)/i],
+  ];
+  const CAT_ORDER = ["Housing", "Groceries", "Food delivery & dining", "Transport", "Subscriptions", "Other", "Shopping", "Bank fees"]; // fixed order = fixed color slot
+  const NOT_SPENDING = /(TRANSFER TO|TO SAVINGS|CREDIT CARD PAYMENT|AUTOPAY PAYMENT|PAYMENT THANK YOU|INVESTMENT|BROKERAGE)/i;
+  const STREAMING = /(NETFLIX|HULU|SPOTIFY|DISNEY|HBO|\bMAX\b|YOUTUBE|PARAMOUNT|PEACOCK|PRIME VIDEO)/i;
+  function categoryOf(desc) { for (const [name, re] of SPEND_CATS) if (re.test(desc)) return name; return "Other"; }
+  function spending(tx) {
+    const out = tx.filter((t) => t.amount < 0 && !NOT_SPENDING.test(t.desc));
+    const totals = Object.fromEntries(CAT_ORDER.map((c) => [c, { name: c, total: 0, count: 0 }]));
+    let streaming = 0;
+    for (const t of out) {
+      const c = totals[categoryOf(t.desc)]; c.total += -t.amount; c.count++;
+      if (STREAMING.test(t.desc)) streaming += -t.amount;
+    }
+    // number of calendar months covered by the statement (monthly bills like rent appear once per month)
+    const months = Math.max(1, new Set(tx.map((t) => t.date.getUTCFullYear() + "-" + t.date.getUTCMonth())).size);
+    const cats = CAT_ORDER.map((c) => totals[c]).map((c) => ({ ...c, total: round2(c.total), monthly: round2(c.total / months) }));
+    const total = round2(cats.reduce((s, c) => s + c.total, 0));
+    return { months: round2(months), total, monthly: round2(total / months), cats, streamingMonthly: round2(streaming / months) };
+  }
+
+  const api = { parseCSV, normalizeTransactions, merchantKey, detectLeaks, summarize, alreadyLost, spending, categoryOf, CAT_ORDER };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Leaks = api;
 })(typeof window !== "undefined" ? window : globalThis);
