@@ -1,4 +1,4 @@
-# DeadlineGuard 🛡️
+# DeadlineGuard 
 
 **Adulting gets expensive when you miss a deadline.**
 
