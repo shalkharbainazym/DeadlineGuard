@@ -431,14 +431,14 @@
         <div class="card plan">
           <div style="font-weight:800">Free</div>
           <div class="p">$0</div>
-          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Up to 5 documents</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Deadline timeline & money-at-risk score</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Subscription & fee scan</li><li style="color:var(--muted)"><span class="no">—</span>Ready-to-send emails & scripts</li><li style="color:var(--muted)"><span class="no">—</span>Calendar reminders</li></ul>
+          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Up to 5 files (documents + bank statement)</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Deadline timeline & money-at-risk score</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Subscription & fee scan</li><li style="color:var(--muted)"><span class="no">—</span>Ready-to-send emails & scripts</li><li style="color:var(--muted)"><span class="no">—</span>Calendar reminders</li></ul>
           <button class="btn btn-ghost" style="width:100%" onclick="runSample()">Try the demo</button>
         </div>
         <div class="card plan pro">
           <div style="font-weight:800">Pro <span class="pill p-up" style="background:var(--lime);color:var(--navy);margin-left:6px">MOST POPULAR</span></div>
           <div class="p">$5<small>/month</small></div>
           <div class="muted" style="font-size:14px">or $49/year</div>
-          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Unlimited documents</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>AI-drafted emails & call scripts</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Calendar reminders for every deadline</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Quarterly re-scan reminders</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Household sharing (coming soon)</li></ul>
+          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Unlimited files</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>AI-drafted emails & call scripts</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Calendar reminders for every deadline</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Quarterly re-scan reminders</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Household sharing (coming soon)</li></ul>
           <button class="btn btn-lime" style="width:100%" onclick="openUpgrade()">Get Pro</button>
         </div>
       </div>
@@ -1232,20 +1232,28 @@ function addDoc(name, j) {
 }
 
 // fallback: pre-computed result for the bundled sample documents, used only if the AI endpoint fails
-// Free plan counter under the upload zone (the bank CSV is not counted)
+// Free plan: 5 files in total — documents AND the bank statement (CSV) both count
+const usedFiles = () => state.docs.length + (state.csv ? 1 : 0);
 function renderQuota() {
-  const n = state.docs.length, el = $("quota");
-  if (state.pro) { el.innerHTML = `<span>Pro · unlimited documents</span>`; return; }
+  const n = usedFiles(), el = $("quota");
+  if (state.pro) { el.innerHTML = `<span>Pro · unlimited files</span>`; return; }
   const full = n >= FREE_DOC_LIMIT;
-  el.innerHTML = `<span class="${full ? "full" : ""}"><b>${n} of ${FREE_DOC_LIMIT}</b> documents used on Free${n > FREE_DOC_LIMIT ? " (added before the limit)" : ""} · bank statement (CSV) doesn't count</span>
+  el.innerHTML = `<span class="${full ? "full" : ""}"><b>${n} of ${FREE_DOC_LIMIT}</b> files used on Free (documents + bank statement)${n > FREE_DOC_LIMIT ? " — added before the limit" : ""}</span>
     ${full ? `<button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade for unlimited</button>` : ""}`;
 }
-let pendingDocs = 0; // documents reserved against the Free limit while their analysis is running
+function freeLimitHit(row) {
+  row.err(`Free plan limit (${FREE_DOC_LIMIT} files) — upgrade to Pro or delete one`);
+  if ($("modal").style.display !== "flex") openUpgrade();
+}
+let pendingDocs = 0; // files reserved against the Free limit while their analysis is running
 async function analyzeFile(name, blob, fallback) {
   const row = fileRow(name);
   let reserved = false;
   try {
     if (/\.csv$/i.test(name)) {
+      // a new statement replaces the old one, so it only needs a free slot if there is no statement yet
+      if (!state.pro && !state.csv && usedFiles() + pendingDocs >= FREE_DOC_LIMIT) return freeLimitHit(row);
+      if (!state.csv) { pendingDocs++; reserved = true; }
       const text = await blob.text();
       const tx = Leaks.normalizeTransactions(text);
       leakData = Leaks.detectLeaks(tx); state.csv = text; state.csvName = name; save(); render();
@@ -1255,13 +1263,9 @@ async function analyzeFile(name, blob, fallback) {
       row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`, "csv");
       return;
     }
-    // Free plan: count documents still being analyzed too — uploads run in parallel,
-    // so checking only finished documents let a 6th one slip through
-    if (!state.pro && state.docs.length + pendingDocs >= FREE_DOC_LIMIT) {
-      row.err(`Free plan limit (${FREE_DOC_LIMIT} documents) — upgrade to Pro or delete one`);
-      if ($("modal").style.display !== "flex") openUpgrade();
-      return;
-    }
+    // Free plan: count files still being analyzed too — uploads run in parallel,
+    // so checking only finished files let a 6th one slip through
+    if (!state.pro && usedFiles() + pendingDocs >= FREE_DOC_LIMIT) return freeLimitHit(row);
     pendingDocs++; reserved = true;
     if (blob.size > 4 * 1024 * 1024) throw new Error("File is over 4 MB");
     let payload;
@@ -1378,17 +1382,17 @@ const FAQ = [
   ["Can I use DeadlineGuard on another device?", "Your data stays on the device where you added it. Restoring Pro on another device with a passwordless email link is coming soon."],
 ];
 function renderSettings() {
-  const used = state.docs.length;
+  const used = usedFiles();
   const plan = state.pro
     ? `<div class="card set-card plan-card">
         <div class="set-row"><div><div class="cap">Your plan</div><div class="big">Pro <small>· $5/month · test mode</small></div></div><span class="pill" style="background:var(--lime);color:var(--navy)">Active</span></div>
-        <div class="kv"><div>Next billing date<b>${fmtDate(nextBilling())}</b></div><div>Amount<b>$5.00 (not charged — test mode)</b></div><div>Documents<b>${used} · unlimited</b></div></div>
+        <div class="kv"><div>Next billing date<b>${fmtDate(nextBilling())}</b></div><div>Amount<b>$5.00 (not charged — test mode)</b></div><div>Files<b>${used} · unlimited</b></div></div>
         <div class="set-row"><span class="cap">Emails, call scripts and calendar reminders are unlocked.</span><button class="btn btn-danger btn-sm" onclick="confirmCancelPro()">Cancel subscription</button></div>
       </div>`
     : `<div class="card set-card plan-card">
         <div class="set-row"><div><div class="cap">Your plan</div><div class="big">Free <small>· $0</small></div></div><span class="pill p-grey">Current</span></div>
-        <div class="kv"><div>Documents used<b>${used} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
-        <div class="set-row"><span class="cap">Pro: unlimited documents, ready emails, call scripts and reminders.</span><button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade to Pro — $5/mo</button></div>
+        <div class="kv"><div>Files used<b>${used} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
+        <div class="set-row"><span class="cap">Pro: unlimited files, ready emails, call scripts and reminders.</span><button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade to Pro — $5/mo</button></div>
       </div>`;
   const cs = currentState(), det = detectedState();
   const stateSel = `<div class="card set-card">

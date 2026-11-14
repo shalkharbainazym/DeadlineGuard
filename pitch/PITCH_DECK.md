@@ -100,7 +100,7 @@ Why now: subscription economy keeps growing, overdraft fees are rising again aft
 
 ## Slide 8 — Business model & unit economics
 **Freemium → Pro $5/month or $49/year**
-- Free: 5 documents, money-at-risk score, subscription scan
+- Free: 5 files (documents + bank statement), money-at-risk score, subscription scan
 - Pro: unlimited docs, ready emails & call scripts, calendar reminders, re-scan reminders
 
 **Unit economics (*assumptions*)**
