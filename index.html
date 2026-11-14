@@ -231,6 +231,14 @@
   .nx b{display:block;font-size:13px} .nx small{color:var(--muted);font-size:11.5px}
   .nx .pill{margin-left:auto}
 
+  .cal-pick{display:grid;gap:10px;margin-top:16px}
+  .cal-opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px 14px;cursor:pointer;font-family:inherit;color:inherit}
+  .cal-opt:hover{border-color:var(--navy);background:var(--soft)}
+  .cal-opt b{display:block;font-size:14.5px} .cal-opt small{color:var(--muted);font-size:12px}
+  .cal-list{display:grid;gap:8px;margin-top:14px}
+  .cal-li{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--soft);border-radius:14px;padding:10px 12px}
+  .cal-li b{display:block;font-size:13.5px} .cal-li small{color:var(--muted);font-size:12px}
+  .cal-badge{font-size:11px}
   .modal-bg{position:fixed;inset:0;background:rgba(30,31,46,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
   .modal{background:#fff;border-radius:24px;max-width:620px;width:100%;padding:26px;max-height:88vh;overflow:auto}
   .modal h3{margin:0 0 4px} .modal label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:14px 0 4px}
@@ -769,6 +777,7 @@ function renderDeadlines(items) {
       </div>
       <div class="right">
         <span class="pill ${s.cls}">${s.txt}</span>
+        ${state.cal && state.cal[i.id] ? `<span class="pill p-done cal-badge">✓ Added to calendar</span>` : ""}
         <div class="amt">${money(i.money_at_risk)}<small>at risk</small></div>
       </div>
     </div>`; }).join("");
@@ -923,32 +932,83 @@ function openLeakDraft(id) { if (needPro()) return; showDraft(leakDrafts[id]); }
 function copyDraft() { navigator.clipboard?.writeText(window._draftText || "").then(() => toast("Copied ✓")); }
 
 function showModal(html) { $("modalBody").innerHTML = html; $("modal").style.display = "flex"; }
-function closeModal() { $("modal").style.display = "none"; }
+function closeModal() { const was = $("modal").style.display === "flex"; $("modal").style.display = "none"; if (was && calCtx) { calCtx = null; render(); } }
 $("modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
 
 /* ================= Calendar export (.ics) ================= */
 function icsEsc(s) { return String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
 function ymd(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0"); }
-function exportICS(id) {
-  if (needPro()) return;
-  let items = allItems().filter((i) => !i.done && (i.actBy || i.dateObj));
-  if (id) items = items.filter((i) => i.id === id);
-  if (!items.length) return toast("No upcoming deadlines to add");
+// Event date: the "act by" date if it comes before the deadline, otherwise the deadline (all-day event)
+const eventDay = (i) => (i.actBy && i.dateObj && i.actBy < i.dateObj ? i.actBy : i.dateObj || i.actBy);
+const eventTitle = (i) => `${i.label} (${money(i.money_at_risk)} at risk)`;
+const eventDetails = (i) => [i.action ? "Do this: " + i.action : "", "Money at risk: " + money(i.money_at_risk), "Deadline: " + fmtDate(i.dateObj),
+  i.why ? "\nWhy: " + i.why : "", "\n— DeadlineGuard · deadlineguard-app.vercel.app"].filter(Boolean).join("\n");
+const calItems = (id) => allItems().filter((i) => !i.done && (i.actBy || i.dateObj) && (!id || i.id === id));
+
+function buildICS(items) {
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
   const ev = items.map((i) => {
-    const d = i.actBy && i.actBy < (i.dateObj || i.actBy) ? i.actBy : i.dateObj || i.actBy;
-    const end = new Date(d); end.setDate(end.getDate() + 1);
+    const d = eventDay(i); const end = addDays(d, 1);
     return ["BEGIN:VEVENT", `UID:${i.id.replace(/[^a-z0-9]/gi, "")}-${ymd(d)}@deadlineguard`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
-      `SUMMARY:${icsEsc("Deadline: " + i.label + " (" + money(i.money_at_risk) + " at risk)")}`,
-      `DESCRIPTION:${icsEsc((i.action ? "Do this: " + i.action + "\n" : "") + "Deadline: " + fmtDate(i.dateObj) + "\n" + (i.why || ""))}`,
+      `SUMMARY:${icsEsc(eventTitle(i))}`, `DESCRIPTION:${icsEsc(eventDetails(i))}`,
       "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY", `DESCRIPTION:${icsEsc(i.label)}`, "END:VALARM", "END:VEVENT"].join("\r\n");
   });
-  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//DeadlineGuard//EN", "CALSCALE:GREGORIAN", ...ev, "END:VCALENDAR"].join("\r\n");
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//DeadlineGuard//EN", "CALSCALE:GREGORIAN", ...ev, "END:VCALENDAR"].join("\r\n");
+}
+function gcalUrl(i) {
+  const d = eventDay(i);
+  const e = encodeURIComponent;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${e(eventTitle(i))}&dates=${ymd(d)}/${ymd(addDays(d, 1))}&details=${e(eventDetails(i))}`;
+}
+function markAdded(ids) { state.cal = state.cal || {}; ids.forEach((id) => (state.cal[id] = true)); save(); render(); }
+
+let calCtx = null; // { id } — null id means "Add all"
+function exportICS(id) { // entry point for every "Add to calendar" / "Remind me" button
+  if (needPro()) return;
+  const items = calItems(id);
+  if (!items.length) return toast("No upcoming deadlines to add");
+  calCtx = { id: id || null };
+  const head = id ? `<p class="sub" style="margin:6px 0 0"><b>${esc(items[0].label)}</b> · ${fmtDate(eventDay(items[0]))}</p>`
+    : `<p class="sub" style="margin:6px 0 0">${items.length} upcoming deadline${items.length > 1 ? "s" : ""} · all-day events with a 3-day reminder</p>`;
+  showModal(`<h3>Add to calendar</h3>${head}
+    <div class="cal-pick">
+      <button class="cal-opt" onclick="calProvider('google')"><span class="tile t-sky">${svgI("cal")}</span><span><b>Google Calendar</b><small>Opens Google Calendar in a new tab</small></span></button>
+      <button class="cal-opt" onclick="calProvider('apple')"><span class="tile t-peach">${svgI("cal")}</span><span><b>Apple Calendar</b><small>Downloads an .ics file</small></span></button>
+      <button class="cal-opt" onclick="calProvider('outlook')"><span class="tile t-lav">${svgI("cal")}</span><span><b>Outlook</b><small>Downloads an .ics file</small></span></button>
+    </div>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+function calProvider(p) {
+  const items = calItems(calCtx && calCtx.id);
+  if (!items.length) return closeModal();
+  if (p === "google") {
+    if (items.length === 1) { window.open(gcalUrl(items[0]), "_blank", "noopener"); markAdded([items[0].id]); closeModal(); return toast("Opened in Google Calendar — click Save there"); }
+    // Google accepts one event per link: one "Add" button per deadline
+    showModal(`<h3>Add to Google Calendar</h3><p class="sub" style="margin:6px 0 0">Google adds one event per link — click <b>Add</b> for each deadline, then <b>Save</b> in Google Calendar.</p>
+      <div class="cal-list">${items.map((i) => `<div class="cal-li"><span><b>${esc(i.label)}</b><small>${fmtDate(eventDay(i))} · ${money(i.money_at_risk)} at risk</small></span>
+        <button class="btn ${state.cal && state.cal[i.id] ? "btn-ghost" : "btn-lime"} btn-sm" id="g-${esc(i.id).replace(/[^a-z0-9]/gi, "")}" onclick="gcalAdd('${i.id}', this)">${state.cal && state.cal[i.id] ? "✓ Added" : "Add"}</button></div>`).join("")}</div>
+      <div class="row"><button class="btn btn-dark" onclick="closeModal()">Done</button></div>`);
+    return;
+  }
+  const name = calCtx && calCtx.id
+    ? `deadline-${items[0].label.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40).replace(/^-+|-+$/g, "")}-${ymd(eventDay(items[0]))}.ics`
+    : `deadlineguard-reminders-${ymd(new Date())}-${String(new Date().getHours()).padStart(2, "0")}${String(new Date().getMinutes()).padStart(2, "0")}.ics`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
-  a.download = id ? "deadline.ics" : "deadlineguard-reminders.ics";
-  a.click();
-  toast(`${items.length} reminder${items.length > 1 ? "s" : ""} downloaded — open the file to add to your calendar`);
+  a.href = URL.createObjectURL(new Blob([buildICS(items)], { type: "text/calendar" }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  markAdded(items.map((i) => i.id));
+  const app = p === "apple" ? "Apple Calendar" : "Outlook";
+  const steps = p === "apple" ? "Open the downloaded file → click <b>Add</b>." : "Open the downloaded file → click <b>Import</b> (Outlook on the web: Add calendar → Upload from file).";
+  showModal(`<h3>${app}: one more step</h3><p class="sub" style="margin:6px 0 0">Downloaded <b>${esc(name)}</b> with ${items.length} event${items.length > 1 ? "s" : ""}.</p>
+    <div class="box" style="margin-top:14px">${steps}</div>
+    <div class="row"><button class="btn btn-dark" onclick="closeModal()">Got it</button></div>`);
+}
+function gcalAdd(id, btn) {
+  const it = calItems().find((i) => i.id === id); if (!it) return;
+  window.open(gcalUrl(it), "_blank", "noopener");
+  state.cal = state.cal || {}; state.cal[id] = true; save();
+  btn.textContent = "✓ Added"; btn.classList.remove("btn-lime"); btn.classList.add("btn-ghost");
 }
 
 /* ================= Upload & analysis ================= */
