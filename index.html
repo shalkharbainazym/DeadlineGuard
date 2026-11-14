@@ -134,8 +134,23 @@
   .ph{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
   .ph h3{margin:0;font-size:16.5px;letter-spacing:-.01em} .ph .cap{color:var(--muted);font-size:12.5px;margin-top:3px}
 
-  .tl{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;align-items:end;height:170px;padding-top:6px;background:repeating-linear-gradient(to top,transparent 0 41px,var(--line) 41px 42px)}
-  .tl .col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:default}
+  .tl{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:170px;padding-top:6px;background:repeating-linear-gradient(to top,transparent 0 41px,var(--line) 41px 42px)}
+  .tl .col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:pointer;border:0;background:none;padding:0;font-family:inherit;color:inherit;border-radius:10px}
+  .tl .col:focus-visible{outline:2px solid var(--lav-d)}
+  .tl .col.sel{background:var(--lav-l)}
+  .tl-ctrl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:-2px 0 16px}
+  .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px}
+  .seg button{border:0;background:none;padding:7px 13px;border-radius:999px;font:700 12.5px "Plus Jakarta Sans",sans-serif;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--navy);color:#fff}
+  .tl-nav{display:flex;align-items:center;gap:6px}
+  .tl-nav b{min-width:116px;text-align:center;font-size:13.5px;white-space:nowrap}
+  .tlx .now{color:var(--ink);font-weight:800}
+  .tl-list{margin-top:14px;background:var(--soft);border-radius:16px;padding:12px;display:grid;gap:6px}
+  .tll-h{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:0 4px 4px}
+  .tll-h span{font-weight:800}
+  .tll-r{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer;font-family:inherit;color:inherit}
+  .tll-r b{display:block;font-size:13px} .tll-r small{color:var(--muted);font-size:11.5px}
+  .tll-r .amt-s{margin-left:auto;font-weight:800;font-size:14px;white-space:nowrap}
   .tl .val{font-size:11px;font-weight:800;margin-bottom:4px;white-space:nowrap;background:#fff;padding:0 2px;border-radius:4px}
   .tl .bar{width:min(12px,70%);background:var(--navy);border-radius:999px;transition:height .6s}
   .tl .col.max .bar{background:var(--lime);box-shadow:inset 0 0 0 2px var(--navy);width:min(14px,75%)}
@@ -227,7 +242,8 @@
     .kpis{grid-template-columns:1fr 1fr} .kpi.big{grid-column:1/-1}
     .colR{grid-template-columns:1fr}
     .item{grid-template-columns:auto 1fr} .right{grid-column:1/-1;align-items:flex-start;text-align:left;flex-direction:row;justify-content:space-between;width:100%}
-    .tl .val{font-size:9.5px}
+    .tl .val{font-size:9.5px} .tl.dense .val{display:none} .tlx{font-size:10px;gap:2px} .tl{gap:2px}
+    .tl-ctrl{flex-direction:column;align-items:stretch} .seg{justify-content:space-between} .seg button{flex:1} .tl-nav{justify-content:space-between} .tl-nav b{flex:1;min-width:0}
     table.leaks th:nth-child(3),table.leaks td:nth-child(3){display:none}
   }
 </style>
@@ -375,9 +391,21 @@
           </div>
 
           <div class="card panel" id="chartWhen">
-            <div class="ph"><div><h3>When your money is at risk</h3><div class="cap" id="tlCap">Money at risk from document deadlines, by week (next 90 days)</div></div><span class="pill p-grey">Weekly</span></div>
+            <div class="ph"><div><h3>When your money is at risk</h3><div class="cap" id="tlCap">Money at risk from open deadlines</div></div></div>
+            <div class="tl-ctrl">
+              <div class="seg" id="tlSeg" role="group" aria-label="Chart period">
+                <button data-m="day" onclick="chartSetMode('day')">Day</button><button data-m="week" onclick="chartSetMode('week')">Week</button><button data-m="month" onclick="chartSetMode('month')">Month</button><button data-m="year" onclick="chartSetMode('year')">Year</button>
+              </div>
+              <div class="tl-nav">
+                <button class="cal-nav" onclick="chartShift(-1)" aria-label="Previous period">‹</button>
+                <b id="tlTitle"></b>
+                <button class="cal-nav" onclick="chartShift(1)" aria-label="Next period">›</button>
+                <button class="btn btn-ghost btn-sm" onclick="chartToday()">Today</button>
+              </div>
+            </div>
             <div class="tl" id="tl" role="img"></div>
             <div class="tlx" id="tlx"></div>
+            <div class="tl-list" id="tlList" style="display:none"></div>
             <div class="ctip" id="tipWhen"></div>
           </div>
 
@@ -532,29 +560,76 @@ function chartTip(tipId, host, html, ev) {
   tip.style.left = Math.max(4, x) + "px"; tip.style.top = y + "px";
 }
 
-const WEEKS = 13;
+// Chart period: Day (bars = days of one week), Week (weeks of one month), Month (months of one year), Year (5 years)
+let chartMode = "week", chartAnchor = null, chartSel = null, chartAuto = true; // auto: follow the next deadline until the user navigates
 let chartData = { months: [], parts: [] };
-function renderCharts(upcoming, in365, sum) {
-  // 1) Money at risk per week, next 13 weeks / ~90 days. One series; the most expensive week is highlighted.
-  const t0 = today(); const weeks = [];
-  for (let w = 0; w < WEEKS; w++) {
-    const s = new Date(t0); s.setDate(s.getDate() + w * 7); const e = new Date(s); e.setDate(e.getDate() + 6);
-    weeks.push({ label: w % 2 ? "" : shortDate(s), long: `Week of ${shortDate(s)} – ${shortDate(e)}`, from: w * 7, to: w * 7 + 6, total: 0, items: [] });
+const DAY_MS = 86400000;
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+function chartBuckets() {
+  const a = chartAnchor, y = a.getFullYear(), m = a.getMonth(), B = [];
+  if (chartMode === "day") {
+    const s = addDays(a, -a.getDay());
+    for (let k = 0; k < 7; k++) { const d = addDays(s, k); B.push({ start: d, end: d, label: d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.getDate(), long: fmtDate(d) }); }
+    return { title: `${shortDate(s)} – ${shortDate(addDays(s, 6))}`, unit: "day", B };
   }
-  let later = 0;
-  upcoming.filter((i) => daysUntil(i.dateObj) <= 365).forEach((i) => {
-    const n = daysUntil(i.dateObj); const b = weeks.find((x) => n >= x.from && n <= x.to);
-    if (b) { b.total += +i.money_at_risk || 0; b.items.push(i); } else later++;
-  });
-  const max = Math.max(1, ...weeks.map((x) => x.total));
-  const maxK = weeks.findIndex((x) => x.total === max && x.total > 0);
-  chartData.months = weeks;
-  $("tlCap").textContent = `Money at risk from document deadlines, by week (next 90 days)${later ? ` · ${later} more later this year` : ""}`;
-  $("tl").setAttribute("aria-label", "Money at risk by week: " + (weeks.filter((x) => x.total).map((x) => x.long + " " + money(x.total)).join(", ") || "none"));
-  $("tl").innerHTML = weeks.map((x, k) => `<div class="col ${k === maxK ? "max" : ""}" data-k="${k}">
+  if (chartMode === "week") {
+    const last = new Date(y, m + 1, 0).getDate(), mon = a.toLocaleDateString("en-US", { month: "short" });
+    for (let d = 1; d <= last; d += 7) { const e = Math.min(d + 6, last); B.push({ start: new Date(y, m, d), end: new Date(y, m, e), label: `${d}–${e}`, long: `${mon} ${d} – ${mon} ${e}` }); }
+    return { title: a.toLocaleDateString("en-US", { month: "short", year: "numeric" }), unit: "week", B };
+  }
+  if (chartMode === "month") {
+    for (let k = 0; k < 12; k++) { const s = new Date(y, k, 1); B.push({ start: s, end: new Date(y, k + 1, 0), label: s.toLocaleDateString("en-US", { month: "short" }), long: s.toLocaleDateString("en-US", { month: "long", year: "numeric" }) }); }
+    return { title: String(y), unit: "month", B };
+  }
+  for (let k = 0; k < 5; k++) B.push({ start: new Date(y + k, 0, 1), end: new Date(y + k, 11, 31), label: String(y + k), long: String(y + k) });
+  return { title: `${y} – ${y + 4}`, unit: "year", B };
+}
+function chartShift(dir) {
+  const a = chartAnchor || today();
+  chartAnchor = chartMode === "day" ? addDays(a, 7 * dir) : chartMode === "week" ? new Date(a.getFullYear(), a.getMonth() + dir, 1)
+    : chartMode === "month" ? new Date(a.getFullYear() + dir, 0, 1) : new Date(a.getFullYear() + 5 * dir, 0, 1);
+  chartAuto = false; chartSel = null; renderTimeline();
+}
+function chartToday() { chartAnchor = today(); chartAuto = false; chartSel = null; renderTimeline(); }
+function chartSetMode(m) { chartMode = m; chartSel = null; renderTimeline(); }
+function chartPick(k) { chartSel = chartSel === k ? null : k; renderTimeline(); }
+
+function renderTimeline() {
+  // open (not handled) deadlines with a date — past ones included so earlier periods are browsable
+  const open = allItems().filter((i) => !i.done && i.dateObj);
+  if (!chartAnchor || chartAuto) {
+    const next = open.filter((i) => daysUntil(i.dateObj) >= 0).sort((a, b) => a.dateObj - b.dateObj)[0];
+    chartAnchor = next ? next.dateObj : today();
+  }
+  document.querySelectorAll("#tlSeg button").forEach((b) => b.classList.toggle("on", b.dataset.m === chartMode));
+  const { title, unit, B } = chartBuckets();
+  B.forEach((b) => { b.items = open.filter((i) => i.dateObj >= b.start && i.dateObj <= b.end); b.total = b.items.reduce((s, i) => s + (+i.money_at_risk || 0), 0); b.now = today() >= b.start && today() <= b.end; });
+  const max = Math.max(1, ...B.map((x) => x.total));
+  const maxK = B.findIndex((x) => x.total === max && x.total > 0);
+  const sumAll = B.reduce((s, x) => s + x.total, 0);
+  chartData.months = B;
+  $("tlTitle").textContent = title;
+  $("tlCap").textContent = `Money at risk from open deadlines, by ${unit} · ${money(sumAll)} in this period`;
+  const cols = `repeat(${B.length},minmax(0,1fr))`;
+  $("tl").style.gridTemplateColumns = cols; $("tlx").style.gridTemplateColumns = cols;
+  $("tl").classList.toggle("dense", B.length > 7);
+  $("tl").setAttribute("aria-label", `Money at risk by ${unit}, ${title}: ` + (B.filter((x) => x.total).map((x) => x.long + " " + money(x.total)).join(", ") || "none"));
+  $("tl").innerHTML = B.map((x, k) => `<button class="col ${k === maxK ? "max" : ""} ${k === chartSel ? "sel" : ""}" data-k="${k}" onclick="chartPick(${k})" aria-label="${esc(x.long)}: ${money(x.total)} at risk">
       ${x.total ? `<div class="val">${money(x.total)}</div>` : ""}
-      <div class="bar" style="height:${x.total ? Math.max(6, (x.total / max) * 130) : 3}px;${x.total ? "" : "opacity:.15"}"></div></div>`).join("");
-  $("tlx").innerHTML = weeks.map((x) => `<div>${x.label}</div>`).join("");
+      <div class="bar" style="height:${x.total ? Math.max(6, (x.total / max) * 130) : 3}px;${x.total ? "" : "opacity:.15"}"></div></button>`).join("");
+  $("tlx").innerHTML = B.map((x) => `<div class="${x.now ? "now" : ""}">${x.label}</div>`).join("");
+  const sel = chartSel !== null ? B[chartSel] : null;
+  $("tlList").style.display = sel ? "block" : "none";
+  if (sel) $("tlList").innerHTML = `<div class="tll-h"><b>${esc(sel.long)}</b><span>${money(sel.total)} at risk</span></div>` +
+    (sel.items.length ? sel.items.sort((a, b) => a.dateObj - b.dateObj).map((i) => `<button class="tll-r" onclick="focusItem('${i.id}')">
+      <span class="tile ${TILES[i.doc.doc_type] || "t-sky"}" style="width:30px;height:30px;border-radius:9px">${ICONS[i.doc.doc_type] || ICONS.other}</span>
+      <span><b>${esc(i.label)}</b><small>${fmtDate(i.dateObj)} · ${esc(i.doc.title || i.doc.fileName)}</small></span><span class="amt-s">${money(i.money_at_risk)}</span></button>`).join("")
+      : `<div class="meta" style="padding:6px 0">No deadlines in this ${unit}.</div>`);
+}
+
+function renderCharts(upcoming, in365, sum) {
+  // 1) Timeline with period switcher
+  renderTimeline();
 
   // 2) What the 12-month number is made of
   const parts = [{ name: "Document deadlines", v: in365, note: `${upcoming.filter((i) => daysUntil(i.dateObj) <= 365).length} open deadlines from your documents` }];
@@ -734,7 +809,7 @@ function resetAll() {
   showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-dark" onclick="doReset()">Reset</button></div>`);
 }
-function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; calView = null; calSel = null; save(); $("files").innerHTML = ""; closeModal(); render(); }
+function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; calView = null; calSel = null; chartAnchor = null; chartSel = null; chartAuto = true; save(); $("files").innerHTML = ""; closeModal(); render(); }
 
 function needPro() { if (state.pro) return false; openUpgrade(); return true; }
 function openUpgrade() {
@@ -942,7 +1017,7 @@ function confirmDeleteAll() {
 async function deleteAllData() {
   try { localStorage.removeItem("dg_state"); } catch (e) {}
   await FileStore.clearAll();
-  state = { docs: [], csv: null, done: {}, cancel: {}, pro: false }; leakData = null; calView = null; calSel = null;
+  state = { docs: [], csv: null, done: {}, cancel: {}, pro: false }; leakData = null; calView = null; calSel = null; chartAnchor = null; chartSel = null; chartAuto = true;
   $("files").innerHTML = ""; closeModal(); render(); setView("overview");
   toast("All your data was deleted from this browser");
 }
