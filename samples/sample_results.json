@@ -1,0 +1,152 @@
+{
+  "_note": "Pre-computed analysis of the fictional sample documents, in the exact shape returned by api/analyze.js. Used by the demo only as a fallback when the AI endpoint is unavailable, so judges always see a working end-to-end demo.",
+  "auto_insurance_renewal.pdf": {
+    "doc_type": "auto_insurance",
+    "title": "Auto insurance — Brightline",
+    "provider": "Brightline Auto Insurance",
+    "summary": "Your car insurance auto-renews on Dec 12, 2026 at $1,676 — $256 (18%) more than this year — and will be charged to your Visa unless you act first.",
+    "items": [
+      {
+        "label": "Policy auto-renews 18% higher",
+        "date": "2026-12-12",
+        "type": "price_increase",
+        "amount": 1676,
+        "money_at_risk": 256,
+        "risk_level": "high",
+        "why": "The renewal premium jumps from $1,420 to $1,676 and is charged automatically. Cancelling after renewal costs a 10% short-rate fee, so the cheap window is before Dec 12. At risk = the $256 increase.",
+        "action": "Get 2–3 quotes for the same coverage and ask Brightline to match or lower the renewal price",
+        "act_by": "2026-11-28",
+        "draft_email": {
+          "to": "Brightline Auto Insurance — Customer Service / Retention",
+          "subject": "Renewal premium increase on policy BLA-TX-4471029",
+          "body": "Hello,\n\nMy policy BLA-TX-4471029 is set to renew on 12/12/2026 at $1,676.00, up from $1,420.00 (an 18% increase). I have had no claims or tickets this year.\n\nCould you please review my rate and let me know about any discounts I qualify for (safe driver, paperless, autopay, bundling, low mileage)? I am currently comparing quotes from other insurers and would prefer to stay with Brightline if the price is competitive.\n\nIf I decide not to renew, please confirm what I need to do before 12/12/2026 to avoid being charged.\n\nThank you,\n[Your name]\n[Phone]"
+        }
+      },
+      {
+        "label": "Liability limits are only the Texas minimum",
+        "date": "2026-12-12",
+        "type": "renewal",
+        "amount": null,
+        "money_at_risk": 0,
+        "risk_level": "low",
+        "why": "$30k/$60k bodily injury and $25k property damage may not cover a serious accident; anything above the limit is paid by you. Not a direct cost now, but worth reviewing while you shop.",
+        "action": "Ask for a quote with 100/300/100 limits when you compare prices",
+        "act_by": "2026-11-28",
+        "draft_email": null
+      }
+    ],
+    "hidden_costs": [
+      "Automatic renewal charges $1,676 to the card on file unless you notify them before 12/12/2026",
+      "10% short-rate fee if you cancel after the renewal date",
+      "$60 policy fee included in the premium",
+      "Uninsured motorist coverage was rejected"
+    ]
+  },
+  "apartment_lease.pdf": {
+    "doc_type": "lease",
+    "title": "Lease — Oakwood Apartments",
+    "provider": "Oakwood Apartments",
+    "summary": "Your lease ends Jan 31, 2027 and you must give written notice by Dec 2, 2026 — otherwise you roll onto month-to-month rent of $2,100 (+$250/month).",
+    "items": [
+      {
+        "label": "60-day notice deadline to renew or move out",
+        "date": "2026-12-02",
+        "type": "notice_deadline",
+        "amount": 2100,
+        "money_at_risk": 750,
+        "risk_level": "high",
+        "why": "Without written notice 60 days before the lease ends (Jan 31, 2027), the lease converts to month-to-month at $2,100 instead of $1,850, and you owe rent for the full notice period. At risk ≈ $250 × 3 months.",
+        "action": "Decide to renew or move, then send written notice to the landlord and keep a copy",
+        "act_by": "2026-11-25",
+        "draft_email": {
+          "to": "Oakwood Apartments — Leasing Office",
+          "subject": "Notice regarding lease for Unit 3B (ends 01/31/2027)",
+          "body": "Hello,\n\nI am the tenant of Unit 3B, 4100 S Congress Ave, under the lease ending 01/31/2027. Per Section 14 of my lease, I am giving written notice more than 60 days before the end of the term that I intend to [sign a 12-month renewal lease / vacate the unit on 01/31/2027].\n\n[If renewing:] Please send me the renewal terms. I would like to keep my current rent of $1,850.00 if possible.\n[If vacating:] Please let me know the move-out inspection process. My forwarding address for the security deposit is [address].\n\nPlease confirm receipt of this notice in writing.\n\nThank you,\nJordan Miller\n[Phone]"
+        }
+      },
+      {
+        "label": "Rent due — late fee after the 3rd",
+        "date": "2026-12-03",
+        "type": "payment_due",
+        "amount": 1850,
+        "money_at_risk": 75,
+        "risk_level": "low",
+        "why": "Rent paid after the 3rd costs a $75 late fee plus $10 per extra day.",
+        "action": "Set up autopay for the 1st of each month",
+        "act_by": "2026-12-01",
+        "draft_email": null
+      }
+    ],
+    "hidden_costs": [
+      "Automatic month-to-month conversion at $2,100/month if notice is late",
+      "Late fee: $75 + $10 per day after the 3rd",
+      "You owe rent for the full notice period even after moving out",
+      "Security deposit is returned only after you give a forwarding address in writing"
+    ]
+  },
+  "fsa_statement.pdf": {
+    "doc_type": "fsa_hsa",
+    "title": "Health FSA — BenefitBridge",
+    "provider": "BenefitBridge",
+    "summary": "You have $612 left in your FSA that disappears on Dec 31, 2026 — your plan has no carryover or grace period.",
+    "items": [
+      {
+        "label": "FSA balance expires — use it or lose it",
+        "date": "2026-12-31",
+        "type": "use_or_lose",
+        "amount": 612,
+        "money_at_risk": 612,
+        "risk_level": "high",
+        "why": "Any of the $612 balance not spent on eligible expenses incurred by Dec 31 is forfeited to your employer. There is no carryover or grace period.",
+        "action": "Book a dental cleaning or eye exam, refill prescriptions, and buy eligible items (contacts, sunscreen, first-aid) before Dec 31",
+        "act_by": "2026-12-15",
+        "draft_email": null
+      },
+      {
+        "label": "Last day to submit 2026 FSA claims",
+        "date": "2027-03-31",
+        "type": "notice_deadline",
+        "amount": null,
+        "money_at_risk": 0,
+        "risk_level": "medium",
+        "why": "Expenses from 2026 must be claimed by Mar 31, 2027 or you are not reimbursed. Money at risk is already counted in the Dec 31 deadline.",
+        "action": "Submit receipts in the BenefitBridge app as soon as you pay",
+        "act_by": "2027-01-31",
+        "draft_email": null
+      }
+    ],
+    "hidden_costs": [
+      "No carryover and no grace period — unused balance is forfeited",
+      "Claims for 2026 expenses are rejected after 03/31/2027"
+    ]
+  },
+  "laptop_receipt.pdf": {
+    "doc_type": "warranty",
+    "title": "Laptop warranty — Lumen Pro 15",
+    "provider": "Northgate Electronics",
+    "summary": "Your $1,299 laptop's warranty ends Dec 2, 2026 — the last day you can add 2 more years of protection for $149.",
+    "items": [
+      {
+        "label": "Laptop warranty ends — last day to extend",
+        "date": "2026-12-02",
+        "type": "expiration",
+        "amount": 149,
+        "money_at_risk": 350,
+        "risk_level": "medium",
+        "why": "After Dec 2, 2026 any hardware failure is on you; display or logic-board repairs typically cost $350–$700. Northgate Care+ ($149, 2 years) can only be bought while the warranty is active.",
+        "action": "Check the laptop for any defects (battery, screen, keys) and file a warranty claim now, or decide on Care+",
+        "act_by": "2026-11-25",
+        "draft_email": {
+          "to": "Northgate Electronics — Customer Support",
+          "subject": "Warranty check / Care+ for order NG-118-55120",
+          "body": "Hello,\n\nI bought a Lumen Pro 15 laptop (SN LP15-88X2Q1) on 12/02/2025, order NG-118-55120. My manufacturer warranty ends on 12/02/2026.\n\n1) I would like to report the following issue under warranty before it expires: [describe issue, or delete this line].\n2) Please send me the steps to add Northgate Care+ extended protection before the deadline, and confirm the price of $149 for 2 years.\n\nThank you,\nJordan Miller\n[Phone]"
+        }
+      }
+    ],
+    "hidden_costs": [
+      "Accidental damage is not covered by the manufacturer warranty",
+      "Care+ can't be added after 12/02/2026",
+      "Proof of purchase is required for warranty claims — keep the receipt"
+    ]
+  }
+}

@@ -373,7 +373,7 @@ function renderDocs() {
   if (!state.docs.length && !state.csv) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet.</div>'; return; }
   el.innerHTML = state.docs.map((d) => `
     <div class="card doc"><h4>${ICONS[d.doc_type] || "📄"} ${esc(d.title || d.fileName)}</h4>
-      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}</div>
+      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div>
       <p>${esc(d.summary)}</p>
       ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:600;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
     </div>`).join("") + (state.csv ? `<div class="card doc"><h4>🏦 Bank statement</h4><div class="meta">CSV · analyzed in your browser</div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
@@ -451,7 +451,14 @@ function fileRow(name) {
 }
 const readAsDataURL = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 
-async function analyzeFile(name, blob) {
+function addDoc(name, j) {
+  const doc = Object.assign(j, { id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), fileName: name });
+  state.docs.push(doc); save(); render();
+  return doc;
+}
+
+// fallback: pre-computed result for the bundled sample documents, used only if the AI endpoint fails
+async function analyzeFile(name, blob, fallback) {
   const row = fileRow(name);
   try {
     if (/\.csv$/i.test(name)) {
@@ -471,13 +478,21 @@ async function analyzeFile(name, blob) {
       const mediaType = url.slice(5, url.indexOf(";")) || (name.endsWith(".pdf") ? "application/pdf" : "image/jpeg");
       payload = { data: url.split(",")[1], mediaType: /\.pdf$/i.test(name) ? "application/pdf" : mediaType, fileName: name };
     }
-    const r = await fetch("api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-    const j = await r.json().catch(() => ({ error: "Server error " + r.status }));
-    if (!r.ok || j.error) throw new Error(j.error || "Analysis failed");
-    const doc = Object.assign(j, { id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), fileName: name });
-    state.docs.push(doc); save(); render();
+    let j;
+    try {
+      const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
+      const r = await fetch("api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload), signal: ctrl.signal });
+      clearTimeout(timer);
+      j = await r.json().catch(() => ({ error: "Server error " + r.status }));
+      if (!r.ok || j.error) throw new Error(j.error || "Analysis failed");
+    } catch (e) {
+      if (!fallback) throw e.name === "AbortError" ? new Error("AI took too long — please try again") : e;
+      console.warn("AI analysis unavailable, using saved sample result:", e.message);
+      j = Object.assign(JSON.parse(JSON.stringify(fallback)), { demo: true });
+    }
+    const doc = addDoc(name, j);
     const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
-    row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk`);
+    row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`);
   } catch (e) { row.err(e.message || String(e)); }
 }
 
@@ -496,10 +511,13 @@ async function runSample() {
   const already = new Set(state.docs.map((d) => d.fileName));
   const todo = SAMPLE_FILES.filter((n) => !(n.endsWith(".csv") ? state.csv : already.has(n)));
   if (!todo.length) { toast("Sample documents are already analyzed"); }
-  const blobs = await Promise.all(todo.map(async (n) => ({ name: n, blob: await (await fetch("samples/" + n)).blob() })));
-  const csv = blobs.filter((x) => x.name.endsWith(".csv")); const docs = blobs.filter((x) => !x.name.endsWith(".csv"));
-  for (const x of csv) await analyzeFile(x.name, x.blob);
-  await Promise.all(docs.map((x) => analyzeFile(x.name, x.blob)));
+  try {
+    const saved = await fetch("samples/sample_results.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    const blobs = await Promise.all(todo.map(async (n) => ({ name: n, blob: await (await fetch("samples/" + n)).blob() })));
+    const csv = blobs.filter((x) => x.name.endsWith(".csv")); const docs = blobs.filter((x) => !x.name.endsWith(".csv"));
+    for (const x of csv) await analyzeFile(x.name, x.blob);
+    await Promise.all(docs.map((x) => analyzeFile(x.name, x.blob, saved[x.name])));
+  } catch (e) { toast("Could not load sample documents: " + (e.message || e)); }
   b.disabled = false; b.textContent = "▶ Try with sample documents";
 }
 
