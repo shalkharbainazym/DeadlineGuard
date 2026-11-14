@@ -95,6 +95,28 @@
   .procard b{display:block;font-size:16px;margin-bottom:4px} .procard p{margin:0 0 12px;font-size:12.5px;line-height:1.45}
 
   .main{min-width:0}
+  .main.settings-mode .colR,.main.settings-mode .colL > :not(#views){display:none}
+  .main.settings-mode .cols{grid-template-columns:minmax(0,1fr)}
+  .set-grid{display:grid;gap:16px;max-width:860px}
+  .set-card{padding:22px}
+  .set-card h4{margin:0 0 4px;font-size:16px} .set-card .cap{color:var(--muted);font-size:13px;line-height:1.5}
+  .set-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .plan-card{background:var(--navy);color:#fff} .plan-card .cap{color:#a9abc0}
+  .plan-card .big{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px}
+  .plan-card .big small{font-size:14px;font-weight:600;color:#a9abc0}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+  .kv div{background:rgba(255,255,255,.07);border-radius:14px;padding:10px 12px;font-size:12px;color:#a9abc0}
+  .kv b{display:block;color:#fff;font-size:14.5px;margin-top:2px}
+  .set-card:not(.plan-card) .kv div{background:var(--soft);color:var(--muted)} .set-card:not(.plan-card) .kv b{color:var(--ink)}
+  .faq details{border-bottom:1px solid var(--line);padding:4px 0}
+  .faq details:last-child{border:0}
+  .faq summary{cursor:pointer;list-style:none;padding:12px 28px 12px 0;font-weight:700;font-size:14px;position:relative}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";position:absolute;right:4px;top:9px;font-size:20px;font-weight:600;color:var(--muted)}
+  .faq details[open] summary::after{content:"−"}
+  .faq details p{margin:0 0 12px;font-size:13.5px;line-height:1.6;color:#3d3f52}
+  .btn-danger{background:var(--peach);color:var(--peach-d)} .btn-danger:hover{background:#fbd2bb}
+  .btn:disabled{cursor:not-allowed}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:6px 0 18px;flex-wrap:wrap}
   .topbar h1{font-size:30px;margin:0;letter-spacing:-.02em} .topbar p{margin:4px 0 0;color:var(--muted);font-size:14px}
   .top-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -325,6 +347,7 @@
       <button class="nav-i" data-t="leaks"><svg class="ic" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>Subscriptions</button>
       <button class="nav-i" data-t="docs"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Documents</button>
       <button class="nav-i" onclick="exportICS()"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Add to calendar</button>
+      <button class="nav-i" data-t="settings"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/><circle cx="12" cy="12" r="6.5"/></svg>Settings</button>
       <div class="grow"></div>
       <div class="procard" id="procard"></div>
     </aside>
@@ -375,6 +398,7 @@
             </div>
             <div id="t-leaks" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Subscriptions & money leaks</h3><div class="cap">From your bank statement — analyzed in your browser</div></div></div><div id="leaks"></div></div>
             <div id="t-docs" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Your documents</h3><div class="cap">What each document means for your money</div></div></div><div id="docs" class="docs"></div></div>
+            <div id="t-settings" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Settings</h3><div class="cap">Your plan, help and privacy controls</div></div></div><div id="settings" class="set-grid"></div></div>
           </div>
         </div>
 
@@ -427,7 +451,8 @@ const money = (n) => "$" + Math.round(n || 0).toLocaleString("en-US");
 const money2 = (n) => "$" + (n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const parseDay = (s) => { if (!s) return null; const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
-const daysUntil = (d) => (d ? Math.round((d - today()) / 86400000) : null);
+const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const daysUntil =(d) => (d ? Math.round((d - today()) / 86400000) : null);
 const fmtDate = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
 const shortDate = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -493,6 +518,7 @@ function render() {
   renderCalendar(items);
   renderNext(items);
   renderProCard();
+  renderSettings();
 }
 
 /* ================= Charts ================= */
@@ -717,7 +743,7 @@ function openUpgrade() {
     <div class="box" style="margin-top:14px"><b>Hackathon demo — test mode.</b> No card is charged. Click below to activate Pro on this browser.</div>
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Not now</button><button class="btn btn-lime" onclick="activatePro()">Activate Pro (test mode)</button></div>`);
 }
-function activatePro() { state.pro = true; save(); closeModal(); toast("Pro activated"); render(); }
+function activatePro() { state.pro = true; state.proSince = localISO(today()); save(); closeModal(); toast("Pro activated"); render(); }
 
 function showDraft(d) {
   if (!d) return;
@@ -851,10 +877,99 @@ function goHome() { document.body.classList.remove("in-app"); window.scrollTo({ 
 function setView(t) {
   document.querySelectorAll(".nav-i[data-t]").forEach((x) => x.classList.toggle("on", x.dataset.t === t));
   const v = t === "overview" ? "deadlines" : t;
-  ["deadlines", "leaks", "docs"].forEach((n) => ($("t-" + n).style.display = n === v ? "block" : "none"));
-  if (t === "overview") window.scrollTo({ top: 0, behavior: "smooth" });
+  ["deadlines", "leaks", "docs", "settings"].forEach((n) => ($("t-" + n).style.display = n === v ? "block" : "none"));
+  document.querySelector(".main").classList.toggle("settings-mode", t === "settings");
+  if (t === "overview" || t === "settings") window.scrollTo({ top: 0, behavior: "smooth" });
   else $("views").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+/* ================= Settings ================= */
+function addMonths(d, n) { const x = new Date(d); const day = x.getDate(); x.setDate(1); x.setMonth(x.getMonth() + n); x.setDate(Math.min(day, new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate())); return x; }
+function nextBilling() {
+  const start = parseDay(state.proSince) || today();
+  let n = 1, d = addMonths(start, 1);
+  while (d <= today()) d = addMonths(start, ++n);
+  return d;
+}
+const FAQ = [
+  ["Where is my data stored?", "Only in this browser. Your results are saved in this browser's local storage and your uploaded files in its IndexedDB — on this device only. We have no database and no account, so nothing is kept on our servers."],
+  ["What does the AI do with my files?", "When you upload a document, it is sent once to our AI provider to read the dates, amounts and fine print. The result comes back to your browser. The file is not stored on our server. Your bank CSV is never uploaded at all — it is analyzed right in your browser."],
+  ["How do I download a CSV from my bank?", "In your bank's website or app open Account → Activity (or Statements) → Download / Export → choose CSV and the last 3–6 months. Chase, Bank of America, Wells Fargo, Capital One and most credit unions support it. No bank login is ever shared with DeadlineGuard."],
+  ["How do I cancel my subscription?", "Open Settings → Your plan → Cancel subscription. You go back to the Free plan right away; your deadlines and money-at-risk score stay. In this demo Pro runs in test mode, so no card is ever charged."],
+  ["Is this legal, tax or financial advice?", "No. DeadlineGuard gives general information to help you notice deadlines and costs. For decisions about your lease, insurance, taxes or investments, talk to a licensed professional or the company that issued the document."],
+  ["Can I use DeadlineGuard on another device?", "Your data stays on the device where you added it. Restoring Pro on another device with a passwordless email link is coming soon."],
+];
+function renderSettings() {
+  const used = state.docs.length;
+  const plan = state.pro
+    ? `<div class="card set-card plan-card">
+        <div class="set-row"><div><div class="cap">Your plan</div><div class="big">Pro <small>· $5/month · test mode</small></div></div><span class="pill" style="background:var(--lime);color:var(--navy)">Active</span></div>
+        <div class="kv"><div>Next billing date<b>${fmtDate(nextBilling())}</b></div><div>Amount<b>$5.00 (not charged — test mode)</b></div><div>Documents<b>${used} · unlimited</b></div></div>
+        <div class="set-row"><span class="cap">Emails, call scripts and calendar reminders are unlocked.</span><button class="btn btn-danger btn-sm" onclick="confirmCancelPro()">Cancel subscription</button></div>
+      </div>`
+    : `<div class="card set-card plan-card">
+        <div class="set-row"><div><div class="cap">Your plan</div><div class="big">Free <small>· $0</small></div></div><span class="pill p-grey">Current</span></div>
+        <div class="kv"><div>Documents used<b>${Math.min(used, FREE_DOC_LIMIT)} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
+        <div class="set-row"><span class="cap">Pro: unlimited documents, ready emails, call scripts and reminders.</span><button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade to Pro — $5/mo</button></div>
+      </div>`;
+  $("settings").innerHTML = plan + `
+    <div class="card set-card">
+      <h4>Help & FAQ</h4>
+      <div class="faq">${FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
+    </div>
+    <div class="card set-card set-row">
+      <div><h4>Contact support</h4><div class="cap">Questions, bugs or ideas — we usually reply within one business day.</div></div>
+      <a class="btn btn-dark btn-sm" href="mailto:support@deadlineguard.app?subject=${encodeURIComponent("DeadlineGuard support")}">${svgI("mail")} Email support</a>
+    </div>
+    <div class="card set-card set-row">
+      <div><h4>Restore Pro on another device</h4><div class="cap">Passwordless email link — coming soon.</div></div>
+      <button class="btn btn-ghost btn-sm" disabled title="Coming soon">Coming soon</button>
+    </div>
+    <div class="card set-card set-row">
+      <div><h4>Delete all my data</h4><div class="cap">Removes every document, result and saved file from this browser. This can't be undone.</div></div>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteAll()">${svgI("trash")} Delete all my data</button>
+    </div>`;
+}
+function confirmCancelPro() {
+  showModal(`<h3>Cancel Pro?</h3><p class="sub" style="margin:6px 0 0">You'll go back to the Free plan right away. Ready emails, call scripts and calendar reminders will be locked again. Your deadlines stay.</p>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Keep Pro</button><button class="btn btn-danger" onclick="cancelPro()">Cancel subscription</button></div>`);
+}
+function cancelPro() { state.pro = false; delete state.proSince; save(); closeModal(); render(); toast("Pro cancelled — you're on the Free plan"); }
+function confirmDeleteAll() {
+  showModal(`<h3>Delete all your data?</h3><p class="sub" style="margin:6px 0 0">This removes all documents, results, saved files and your plan from this browser. It can't be undone.</p>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-danger" onclick="deleteAllData()">Delete everything</button></div>`);
+}
+async function deleteAllData() {
+  try { localStorage.removeItem("dg_state"); } catch (e) {}
+  await FileStore.clearAll();
+  state = { docs: [], csv: null, done: {}, cancel: {}, pro: false }; leakData = null; calView = null; calSel = null;
+  $("files").innerHTML = ""; closeModal(); render(); setView("overview");
+  toast("All your data was deleted from this browser");
+}
+
+/* ================= File storage (IndexedDB, this device only) ================= */
+const FileStore = (() => {
+  const DB = "deadlineguard", STORE = "files";
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(new Error("IndexedDB not available"));
+    const r = indexedDB.open(DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: "id" });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = async (mode, fn) => { const db = await open(); return new Promise((res, rej) => { const t = db.transaction(STORE, mode); const out = fn(t.objectStore(STORE)); t.oncomplete = () => res(out && out.result); t.onerror = () => rej(t.error); }); };
+  return {
+    put: (rec) => tx("readwrite", (s) => s.put(rec)).catch(() => null),
+    get: (id) => tx("readonly", (s) => s.get(id)).catch(() => null),
+    del: (id) => tx("readwrite", (s) => s.delete(id)).catch(() => null),
+    clearAll: () => new Promise((res) => {
+      const finish = () => { dbp = null; res(); };
+      (dbp ? dbp.then((db) => db.close()).catch(() => {}) : Promise.resolve()).then(() => {
+        try { const r = indexedDB.deleteDatabase(DB); r.onsuccess = r.onerror = r.onblocked = finish; } catch (e) { finish(); }
+      });
+    }),
+  };
+})();
 
 /* ================= Wiring ================= */
 $("fileIn").addEventListener("change", (e) => { handleFiles(e.target.files); e.target.value = ""; });
