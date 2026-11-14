@@ -165,6 +165,8 @@
   .files{margin-top:10px;display:grid;gap:8px}
   .file{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;background:var(--soft);border-radius:12px}
   .file .st{margin-left:auto;font-weight:700;text-align:right}
+  .file-x{flex:none;width:32px;height:32px;border-radius:10px;border:0;background:#fff;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+  .file-x:hover{background:var(--peach);color:var(--peach-d)} .file-x .i{width:16px;height:16px}
   .spin{width:14px;height:14px;border:2px solid var(--lav-l);border-top-color:var(--lav-d);border-radius:50%;animation:sp 1s linear infinite;display:inline-block}
   @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -1077,6 +1079,7 @@ function confirmDeleteDoc(id) {
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-danger" onclick="deleteDoc('${id}')">Delete</button></div>`);
 }
 async function deleteDoc(id) {
+  document.querySelectorAll(`#files .file[data-doc="${CSS.escape(id)}"]`).forEach((r) => r.remove());
   if (id === "csv") { state.csv = null; delete state.csvName; leakData = null; state.cancel = {}; }
   else {
     state.docs = state.docs.filter((d) => d.id !== id);
@@ -1206,7 +1209,15 @@ function fileRow(name) {
   const row = document.createElement("div"); row.className = "file";
   row.innerHTML = `<span class="tile ${name.endsWith(".csv") ? "t-sun" : "t-sky"}" style="width:30px;height:30px;border-radius:9px">${svgI(name.endsWith(".csv") ? "bank" : "file")}</span><span>${esc(name)}</span><span class="st"><span class="spin"></span></span>`;
   $("files").prepend(row);
-  return { ok: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--mint-d)">✓ ${esc(m)}</span>`), err: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--peach-d)">✕ ${esc(m)}</span>`) };
+  // delete / dismiss button appears once the file is processed
+  const addX = (label, onclick) => { const b = document.createElement("button"); b.className = "file-x"; b.setAttribute("aria-label", label); b.title = label; b.innerHTML = svgI("trash"); b.onclick = onclick; row.appendChild(b); };
+  return {
+    ok: (m, docId) => {
+      row.querySelector(".st").innerHTML = `<span style="color:var(--mint-d)">✓ ${esc(m)}</span>`;
+      if (docId) { row.dataset.doc = docId; addX(`Delete ${name}`, () => confirmDeleteDoc(docId)); }
+    },
+    err: (m) => { row.querySelector(".st").innerHTML = `<span style="color:var(--peach-d)">✕ ${esc(m)}</span>`; addX(`Remove ${name} from the list`, () => row.remove()); },
+  };
 }
 const readAsDataURL = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 
@@ -1226,7 +1237,8 @@ async function analyzeFile(name, blob, fallback) {
       leakData = Leaks.detectLeaks(tx); state.csv = text; state.csvName = name; save(); render();
       saveFile("csv", name, blob); // kept in this browser's IndexedDB only
       const s = Leaks.summarize(leakData);
-      row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`);
+      document.querySelectorAll('#files .file[data-doc="csv"]').forEach((r) => r.remove()); // a new statement replaces the old one
+      row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`, "csv");
       return;
     }
     if (!state.pro && state.docs.length >= FREE_DOC_LIMIT) { row.err("Free plan limit (5 docs) — upgrade to Pro"); openUpgrade(); return; }
@@ -1255,7 +1267,7 @@ async function analyzeFile(name, blob, fallback) {
     const doc = addDoc(name, j);
     saveFile(doc.id, name, blob); // kept in this browser's IndexedDB only, never on our server
     const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
-    row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`);
+    row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`, doc.id);
   } catch (e) { row.err(e.message || String(e)); }
 }
 
@@ -1436,8 +1448,19 @@ const drop = $("drop");
 drop.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
 document.querySelectorAll(".nav-i[data-t], .m-tab[data-t]").forEach((t) => t.addEventListener("click", () => setView(t.dataset.t)));
 
+// Rebuild the uploaded-files list from saved state, so files can be deleted after a reload too
+function restoreFileRows() {
+  $("files").innerHTML = "";
+  state.docs.forEach((d) => {
+    const n = (d.items || []).length, risk = (d.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
+    fileRow(d.fileName).ok(`${n} deadline${n === 1 ? "" : "s"} · ${money(risk)} at risk${d.demo ? " (saved demo analysis)" : ""}`, d.id);
+  });
+  if (state.csv && leakData) fileRow(state.csvName || "bank_statement.csv").ok(`${leakData.subscriptions.length} recurring · ${money(Leaks.summarize(leakData).leakAnnual)}/yr in leaks`, "csv");
+}
+
 load();
 render();
+restoreFileRows();
 </script>
 </body>
 </html>
