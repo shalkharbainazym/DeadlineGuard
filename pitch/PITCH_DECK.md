@@ -1,155 +1,158 @@
-# DeadlineGuard — Pitch Deck (10 slides)
+# DeadlineGuard — Pitch Deck (10 слайдов)
 
-Текст слайдов — на английском (продукт для США). Под каждым слайдом — 🎤 заметки для выступления на русском.
-Цифры с источниками помечены [n] — список в конце. Помеченное *assumption* — наши допущения, так и говорим.
+Текст слайдов на русском; названия элементов интерфейса оставлены на английском, как на сайте (продукт для США).
+Под каждым слайдом — 🎤 заметки для выступления. Факты со ссылками помечены [n] (список в конце); **допущение** — наша оценка, так и говорим жюри.
 
 ---
 
-## Slide 1 — Title
+## Слайд 1 — Титул
 **DeadlineGuard**
 **Adulting gets expensive when you miss a deadline.**
-AI that reads your insurance, lease, receipts and bank statement — and shows every deadline in dollars, with one clear action.
+AI читает страховку, договор аренды, чеки и банковскую выписку — и показывает каждый дедлайн в долларах с одним понятным действием.
 
 🔗 deadlineguard-app.vercel.app · github.com/shalkharbainazym/DeadlineGuard
-Business Cup 2.0 · Track: MONEY · Nazym Shalkharbay
+Business Cup 2.0 · трек MONEY · Nazym Shalkharbay
 
-🎤 «Взрослая жизнь дорого стоит, если пропустить дедлайн. DeadlineGuard — это AI, который читает ваши документы и показывает каждый дедлайн в долларах и одно действие, чтобы их не потерять.»
-
----
-
-## Slide 2 — Problem
-**Young adults lose money to dates, not decisions.**
-- Insurance **auto-renews** at a higher price — our sample: **+18%, $256/yr**
-- Lease needs **60-day notice** — miss it and rent jumps to month-to-month (+$250/mo)
-- **40% of FSA holders forfeit** money every year — **$404 on average** [1]
-- People underestimate subscriptions by **$133/month**; **42%** forgot they were paying for one [2]
-- US banks & credit unions took **~$12.1B in overdraft/NSF fees** in 2024 [3]
-
-The documents exist. Nobody reads the fine print or sets reminders.
-
-🎤 Человек 25–45 лет впервые живёт сам: страховка, аренда, FSA на работе, 10 подписок. Деньги теряются не из‑за больших решений, а из‑за пропущенных дат и мелкого шрифта.
+🎤 «Взрослая жизнь дорого стоит, если пропустить дедлайн. DeadlineGuard показывает, сколько денег вы можете потерять, сколько уже потеряли — и что сделать прямо сейчас.»
 
 ---
 
-## Slide 3 — Who we sell to
-**Primary user: "first-time adult" in the US, 25–45**
-- Just moved out / first lease, first employer benefits (FSA/HSA), first own car insurance
-- Busy, phone-first, has 5–15 subscriptions, hates paperwork
-- Does **not** want to give a bank login to an app
-- ~**90M** US adults aged 25–44 [4] — we start with renters with employer benefits (*assumption*: ~25M)
+## Слайд 2 — Проблема
+**Молодые взрослые теряют деньги из‑за дат, а не из‑за решений.**
+- Страховка **автоматически продлевается** дороже — в нашем примере **+18%, $256 в год**
+- Аренда требует уведомления **за 60 дней**, иначе month‑to‑month на +$250 в месяц
+- **40% держателей FSA** теряют деньги каждый год — **в среднем $404** [1]
+- Люди недооценивают подписки на **$133 в месяц**; **42%** забывали про платную подписку [2]
+- Банки и кредитные союзы США получили **~$12.1 млрд** комиссий за овердрафт в 2024 [3]
 
-**Persona — Jordan, 28, Austin TX:** data analyst, rents, drives a 2019 Civic, has a $1,500 FSA, 8 subscriptions. Keeps paying for things they forgot about.
+Документы есть. Мелкий шрифт никто не читает, напоминания никто не ставит.
 
-🎤 Мы продаём людям, не компаниям (B2C). Наш пользователь — Джордан: снимает квартиру, есть страховка и FSA, и он точно что‑то пропустит.
-
----
-
-## Slide 4 — Solution
-**Drop your paperwork → see your money at risk → act.**
-1. **AI reads the document** (PDF / photo): deadlines, amounts, auto-renewals, notice periods, hidden fees
-2. **Every deadline in dollars**: "$750 at risk by Dec 2"
-3. **Bank CSV scan in the browser**: subscriptions, price hikes, trials → paid, duplicates, fees
-4. **One action per risk**: ready-to-send email / call script + calendar reminder (Pro)
-5. **Money protected score** grows as you handle deadlines
-
-**Privacy-first:** no bank login · files never stored · data stays in the browser
-
-🎤 Три шага: загрузил → увидел, сколько денег под риском → получил готовое действие. Без логина в банк.
+🎤 Человек 25–45 лет впервые живёт сам: страховка, аренда, FSA на работе, 10 подписок. Деньги уходят не из‑за больших решений, а из‑за пропущенных дат.
 
 ---
 
-## Slide 5 — Demo
-**Live: deadlineguard-app.vercel.app → "Try with sample documents"** (no sign-up)
-- 4 documents + 1 bank statement analyzed in **~10 seconds**
-- **$2,500+ at risk in 12 months** found (sample household)
-- Weekly risk chart, deadline calendar, "Next up" with *Act now / Soon / Handled*
-- Leaks: 8 subscriptions, Netflix price hike, Audible trial → paid, Amazon duplicate, 4 bank fees = **$538/yr**
-- Pro (test mode): ready emails + .ics reminders
+## Слайд 3 — Кому продаём
+**Пользователь: «впервые взрослый» в США, 25–45 лет (B2C)**
+- Первая аренда, первые льготы работодателя (FSA/HSA), своя страховка машины
+- Занят, всё с телефона, 5–15 подписок, ненавидит бумаги
+- **Не хочет** давать приложению логин от банка
+- ~**90 млн** взрослых в США 25–44 лет [4]; начинаем с арендаторов с льготами работодателя (**допущение:** ~25 млн)
 
-*(screenshot of the dashboard)*
+**Персона — Jordan, 28, Austin TX:** аналитик данных, снимает квартиру, Honda Civic 2019, FSA $1,500, 8 подписок. Платит за то, о чём забыл.
 
-🎤 Показать вживую: нажать демо → главная цифра → график → открыть письмо в страховую → отметить «Mark handled» → кольцо «Money protected» растёт.
-
----
-
-## Slide 6 — Market
-**TAM:** ~90M US adults 25–44 [4] × $49/yr = **~$4.4B/yr**
-**SAM** (*assumption*): ~25M renters with employer benefits and subscriptions → **~$1.2B/yr**
-**SOM — Year 2 goal** (*assumption*): 50,000 paying users → **~$2.5M ARR**
-
-Why now: subscription economy keeps growing, overdraft fees are rising again after the CFPB cap was repealed in 2025 [3], and multimodal AI can finally read messy PDFs and photos cheaply.
-
-🎤 Рынок огромный, но мы начинаем с узкого сегмента: арендаторы с льготами от работодателя.
+🎤 Продаём людям, не компаниям. Jordan — типичный пользователь: у него точно что‑то сгорит или продлится дороже.
 
 ---
 
-## Slide 7 — Competitors
+## Слайд 4 — Решение
+**Загрузил документы → увидел деньги под риском → сделал одно действие.**
+1. **AI читает документ** (PDF/фото): дедлайны, суммы, автопродление, скрытые платежи — с учётом **штата** пользователя
+2. **Каждый дедлайн в долларах:** «$750 at risk by Dec 2»
+3. **Выписка из банка анализируется в браузере:** подписки, повышения цен, триалы → платно, дубли, комиссии
+4. **Already lost** — сколько уже потеряно и что можно **вернуть через банк**
+5. **Действие в один клик:** готовое письмо или скрипт звонка, **Google / Apple / Outlook Calendar**, план экономии
+
+**Privacy‑first:** без логина в банк · файлы не хранятся на сервере · данные только в браузере
+
+🎤 Мы не «сейф документов» и не бюджет‑приложение. Мы защищаем деньги: каждый риск — сумма и действие.
+
+---
+
+## Слайд 5 — Демо (живой продукт)
+**deadlineguard-app.vercel.app → «Try with sample documents»** (без регистрации)
+- 4 документа + выписка анализируются за **~6–10 секунд** настоящим AI
+- **~$2,500 под риском** за 12 месяцев (пример домохозяйства; AI‑оценка немного меняется)
+- **Already lost: $161.89 за 4 месяца**, из них **$126.99** можно вернуть
+- **Where your money went:** donut по 8 категориям + 3 вывода простым языком
+- График **Day / Week / Month / Year**, календарь, «Next up» со статусами **Act now / Soon / Handled**
+- **Money protected** — кольцо прогресса растёт, когда закрываешь дедлайны
+- Мобильная версия как приложение: нижнее меню, bottom sheets
+
+*(скриншот дашборда)*
+
+🎤 Порядок показа (2 минуты): кнопка демо → главная цифра → Already lost («Get it back») → график, клик по неделе → «Draft email» в страховую → «Add to calendar» → «Mark handled», кольцо растёт → Settings (штат Texas найден автоматически).
+
+---
+
+## Слайд 6 — Рынок
+**TAM:** ~90 млн взрослых в США 25–44 [4] × $49/год = **~$4.4 млрд в год**
+**SAM (допущение):** ~25 млн арендаторов с льготами работодателя и подписками → **~$1.2 млрд в год**
+**SOM, цель на 2‑й год (допущение):** 50 000 платящих → **~$2.5 млн ARR**
+
+**Почему сейчас:** подписочная экономика растёт; комиссии за овердрафт снова растут после отмены лимита CFPB в 2025 [3]; мультимодальный AI наконец дёшево читает «грязные» PDF и фото.
+
+🎤 Рынок большой, но стартуем узко — арендаторы с льготами от работодателя.
+
+---
+
+## Слайд 7 — Конкуренты
 | | **DeadlineGuard** | Rocket Money | Trustworthy |
 |---|---|---|---|
-| Core job | **Protect money: deadline → $ → action** | Budget & subscriptions | Family document vault |
-| Bank login | **No (CSV)** | Required | No |
-| Reads policies, leases, warranties, FSA | **Yes (AI)** | No | Stores, no $ risk |
-| Ready emails / scripts | **Yes** | Negotiation only on Premium+ ($15/mo) [5] | No |
-| Price | **$5/mo · $49/yr** | Premium ~$7–14/mo, Premium+ $15/mo [5] | Free + paid annual plans [6] |
+| Главная задача | **Защита денег: дедлайн → $ → действие** | Бюджет и подписки | Сейф семейных документов |
+| Логин в банк | **Не нужен (CSV)** | Нужен | Не нужен |
+| Читает полисы, аренду, гарантии, FSA | **Да (AI)** | Нет | Хранит, без оценки в $ |
+| «Уже потеряно» + как вернуть | **Да** | Частично | Нет |
+| Готовые письма / скрипты | **Да** | Переговоры по счетам — только Premium+ ($15/мес) [5] | Нет |
+| Цена | **$5/мес · $49/год** | Premium ~$7–14/мес, Premium+ $15/мес [5] | Free + платные годовые планы [6] |
 
-**Our edge:** not a "document safe" and not a budget app — a **money-protection tool** that turns fine print into dollars and actions, without a bank login.
+**Наше отличие:** не «сейф» и не бюджет, а **инструмент защиты денег** — мелкий шрифт превращается в доллары и действия, без логина в банк.
 
-🎤 Rocket Money требует логин в банк и смотрит только транзакции. Trustworthy хранит документы, но не говорит, сколько вы потеряете. Мы — между ними.
-
----
-
-## Slide 8 — Business model & unit economics
-**Freemium → Pro $5/month or $49/year**
-- Free: 5 files (documents + bank statement), money-at-risk score, subscription scan
-- Pro: unlimited docs, ready emails & call scripts, calendar reminders, re-scan reminders
-
-**Unit economics (*assumptions*)**
-- Blended ARPU **$4.4/mo** (half pay annually)
-- AI cost **< $0.10 per user/yr** (Gemini Flash-Lite, ~10 docs) · payments ~9% on $5 → gross margin **~88%**
-- Avg paid lifetime **14 months** → **LTV ≈ $54**
-- Blended **CAC ≈ $15** (organic content + SEO + referrals) → **LTV/CAC ≈ 3.6×**, payback **~4 months**
-
-**Why users pay:** one avoided auto-renewal ($256) pays for 5 years of Pro.
-
-🎤 Себестоимость почти нулевая, потому что AI дешёвый, а CSV анализируется в браузере. LTV больше CAC в 3,6 раза.
+🎤 Rocket Money требует логин в банк и видит только транзакции. Trustworthy хранит документы, но не говорит, сколько вы потеряете. Мы — между ними.
 
 ---
 
-## Slide 9 — Go-to-market & why they come back
-**Acquisition**
-- Short videos "Adulting money traps" (TikTok, Reels, YouTube Shorts)
-- SEO pages: "lease notice letter template", "how to cancel Audible", "FSA deadline Dec 31"
-- Referral: "I protected $750 with DeadlineGuard" share card → 1 month Pro free
-- Partnerships: renter communities, first-job onboarding newsletters
+## Слайд 8 — Бизнес‑модель и unit‑экономика
+**Freemium → Pro $5/мес или $49/год**
+- **Free:** 5 файлов (документы + выписка), деньги под риском, Already lost, траты по категориям, анализ подписок
+- **Pro:** без лимита, готовые письма и скрипты звонков, Google/Apple/Outlook Calendar, напоминания о повторной проверке
 
-**Retention — why they return**
-- Deadlines **recur**: rent, renewals, FSA every year, warranties, price hikes
-- **Calendar reminders** bring users back before each deadline
-- **Money protected** score and savings plan — visible progress
-- Quarterly "re-scan your bank statement" reminder
+**Unit‑экономика (допущения)**
+- Средний ARPU **$4.4/мес** (половина платит за год)
+- Стоимость AI **< $0.10 на пользователя в год** (Gemini Flash‑Lite, ~10 документов); CSV считается в браузере бесплатно; платёжные комиссии ~9% от $5 → валовая маржа **~88%**
+- Средний срок оплаты **14 месяцев** → **LTV ≈ $54**
+- Средний **CAC ≈ $15** (контент + SEO + рефералы) → **LTV/CAC ≈ 3.6×**, окупаемость **~4 месяца**
 
-🎤 Люди возвращаются, потому что дедлайны повторяются каждый год, а напоминания и прогресс «Money protected» возвращают их в продукт.
+**Почему платят:** одно предотвращённое автопродление ($256) окупает 5 лет Pro. «Already lost» показывает реальные потерянные деньги — сильный повод перейти на Pro.
+
+🎤 Себестоимость почти нулевая: AI дешёвый, выписка считается в браузере. LTV больше CAC в 3,6 раза.
 
 ---
 
-## Slide 10 — Roadmap & ask
-**Now (MVP, live):** AI document analysis, CSV leak detector, dashboard, calendar, emails, .ics, Pro test mode
-**Next 3 months:** Stripe payments · email/SMS reminders · optional encrypted account to sync devices · more document types (tax notices, car registration, student loans)
-**6–12 months:** Gmail/receipt import (opt-in) · household sharing · cancellation concierge · Spanish version
+## Слайд 9 — Привлечение и почему возвращаются
+**Привлечение**
+- Короткие видео «Adulting money traps» (TikTok, Reels, Shorts)
+- SEO‑страницы: «lease notice letter template», «how to cancel Audible», «FSA deadline Dec 31»
+- Рефералы: карточка «I protected $750 with DeadlineGuard» → месяц Pro бесплатно
+- Партнёрства: сообщества арендаторов, онбординг‑рассылки для новых сотрудников
 
-**Ask:** feedback, pilot users (US renters 25–45), mentors in US consumer fintech.
+**Удержание — почему возвращаются**
+- Дедлайны **повторяются**: аренда, продления, FSA каждый год, гарантии, повышения цен
+- **Календарь** (Google / Apple / Outlook) возвращает перед каждым дедлайном
+- **Money protected** и **план экономии** — видимый прогресс
+- Новая выписка раз в квартал → новое «Already lost» и новые утечки
+
+🎤 Возвращаются, потому что дедлайны повторяются каждый год, а календарь и прогресс «Money protected» приводят обратно.
+
+---
+
+## Слайд 10 — Roadmap и просьба
+**Сейчас (MVP, работает):** AI‑анализ документов с учётом штата, детектор утечек, Already lost, траты по категориям, дашборд с графиком и календарём, письма, Google/Apple/Outlook Calendar, хранение файлов в браузере, Settings, мобильная версия
+**Следующие 3 месяца:** оплата через Stripe · email/SMS‑напоминания · необязательный зашифрованный аккаунт для синхронизации · «Restore Pro» по ссылке на email · новые типы документов (налоговые уведомления, регистрация авто, студенческие кредиты)
+**6–12 месяцев:** импорт чеков из Gmail (по согласию) · семейный доступ · помощь с отменой подписок · испанская версия
+
+**Просим:** обратную связь, пилотных пользователей (арендаторы в США 25–45), менторов в consumer fintech США.
 
 **DeadlineGuard — never lose money on a missed deadline.**
 deadlineguard-app.vercel.app
 
-🎤 Сегодня работает MVP. Дальше — платежи, напоминания по email и SMS и необязательный аккаунт. Спасибо!
+🎤 MVP уже работает end‑to‑end. Дальше — платежи, напоминания и аккаунт по желанию. Спасибо!
 
 ---
 
-## Sources
-1. EBRI via PSCA, Oct 2026 — 40% of FSA holders forfeited funds in 2024, avg $404: https://www.psca.org/news/psca-news/2026/10/fsa-contributions-rise-as-forfeitures-fall-ebri-finds/
-2. C+R Research survey (2022) via CNBC — consumers underestimate subscriptions by $133/mo; 42% forgot a subscription: https://www.cnbc.com/2022/09/06/consumers-underestimate-monthly-subscription-costs-by-at-least-100.html
-3. NCLC Issue Brief, June 2026 — ~$12.1B overdraft/NSF fees in 2024; CFPB rule repealed 2025: https://www.nclc.org/resources/overdraft-fees-rising-in-absence-of-cfpb-rule/
-4. U.S. Census Bureau population estimates — ~90M adults aged 25–44 (approximate).
-5. Rocket Money pricing & help center (2026): https://www.rocketmoney.com/learn/personal-finance/how-much-does-rocket-money-cost
-6. Trustworthy pricing: https://www.trustworthy.com/pricing
+## Источники
+1. EBRI через PSCA, окт. 2026 — 40% держателей FSA потеряли средства в 2024, в среднем $404: https://www.psca.org/news/psca-news/2026/10/fsa-contributions-rise-as-forfeitures-fall-ebri-finds/
+2. Опрос C+R Research (2022) через CNBC — недооценка подписок на $133/мес; 42% забывали подписку: https://www.cnbc.com/2022/09/06/consumers-underestimate-monthly-subscription-costs-by-at-least-100.html
+3. NCLC, июнь 2026 — ~$12.1 млрд комиссий за овердрафт/NSF в 2024; правило CFPB отменено в 2025: https://www.nclc.org/resources/overdraft-fees-rising-in-absence-of-cfpb-rule/
+4. U.S. Census Bureau — ~90 млн взрослых 25–44 лет (приблизительно).
+5. Rocket Money, цены и справочный центр (2026): https://www.rocketmoney.com/learn/personal-finance/how-much-does-rocket-money-cost
+6. Trustworthy, цены: https://www.trustworthy.com/pricing
