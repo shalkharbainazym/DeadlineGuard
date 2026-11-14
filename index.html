@@ -34,7 +34,11 @@
   .pro-badge{font-size:10px;font-weight:800;background:var(--navy);color:var(--lime);padding:2px 7px;border-radius:6px;margin-left:4px;letter-spacing:.03em}
   .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
   .tile{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:19px;flex:none}
-  .t-peach{background:var(--peach)} .t-lav{background:var(--lav-l)} .t-mint{background:var(--mint)} .t-sky{background:var(--sky)} .t-sun{background:var(--sun)} .t-lime{background:var(--lime)}
+  .t-peach{background:var(--peach);color:var(--peach-d)} .t-lav{background:var(--lav-l);color:var(--lav-d)} .t-mint{background:var(--mint);color:var(--mint-d)} .t-sky{background:var(--sky);color:var(--sky-d)} .t-sun{background:var(--sun);color:var(--sun-d)} .t-lime{background:var(--lime);color:var(--navy)}
+  .i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px}
+  .btn .i{width:16px;height:16px;vertical-align:-3px} .trust .i,.eyebrow .i{width:16px;height:16px} .drop b .i{margin-right:4px}
+  .ok{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--lime);color:var(--navy);align-items:center;justify-content:center;margin-right:8px;vertical-align:-5px} .ok .i{width:13px;height:13px;stroke-width:2.6}
+  .no{display:inline-block;width:20px;margin-right:8px;text-align:center}
 
   /* ================= Landing ================= */
   .top{position:sticky;top:0;z-index:20;background:rgba(244,244,239,.85);backdrop-filter:blur(10px)}
@@ -52,7 +56,7 @@
   h1 em{font-style:normal;background:var(--lime);padding:0 10px;border-radius:12px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
   .lead{font-size:17px;line-height:1.6;color:#36374a;margin:0 0 26px;max-width:540px}
   .cta{display:flex;gap:10px;flex-wrap:wrap}
-  .trust{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;color:#36374a;font-size:13px;font-weight:600}
+  .trust span{display:inline-flex;gap:6px;align-items:center} .trust{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;color:#36374a;font-size:13px;font-weight:600}
   .catch{background:var(--navy);color:#fff;border-radius:26px;padding:22px;position:relative;z-index:1}
   .catch .h{font-size:12px;letter-spacing:.08em;color:#a9abc0;font-weight:700;margin-bottom:6px}
   .mini{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13.5px}
@@ -207,6 +211,31 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 16v-3l1.8-5A2 2 0 0 1 7.7 6.7h8.6a2 2 0 0 1 1.9 1.3L20 13v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 13h16M6 17v2M18 17v2"/><circle cx="7.5" cy="14.5" r=".6"/><circle cx="16.5" cy="14.5" r=".6"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.5-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.5 12 20 12 20z"/><path d="M12 10v5M9.5 12.5h5"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-id" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.8-2 3-2s2.4.6 3 2M15 10h3M15 14h3"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v11M15 9.2c-.6-.8-1.6-1.2-3-1.2-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3.1-1.3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9.5 13v1M14.5 13v1M2.5 13v2M21.5 13v2"/></symbol>
+  <symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 8l12 11M8 16L20 5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></symbol>
+</svg>
 <!-- ================= LANDING ================= -->
 <div id="landing">
   <header class="top">
@@ -226,23 +255,23 @@
   <main class="wrap">
     <div class="hero">
       <div style="position:relative;z-index:1">
-        <span class="eyebrow">🛡️ For first-time adults in the US</span>
+        <span class="eyebrow"><svg class="i"><use href="#i-shield"/></svg> For first-time adults in the US</span>
         <h1>Adulting gets <em>expensive</em> when you miss a deadline.</h1>
         <p class="lead">Drop in your insurance policy, lease, receipts, benefits statement and bank statement. DeadlineGuard reads them, finds every date and leak that can cost you money, and tells you exactly what to do — before it's too late.</p>
         <div class="cta">
-          <button id="sampleBtn" class="btn btn-dark" onclick="runSample()">▶ Try with sample documents</button>
+          <button id="sampleBtn" class="btn btn-dark" onclick="runSample()"><svg class="i"><use href="#i-play"/></svg> Try with sample documents</button>
           <button class="btn btn-lime" onclick="openApp(true)">Upload my documents</button>
           <button id="dashBtn" class="btn btn-ghost" style="display:none" onclick="openApp()">Open my dashboard →</button>
         </div>
-        <div class="trust"><span>🔒 No bank login, ever</span><span>🗑️ Files analyzed, never stored</span><span>💻 Data stays in your browser</span></div>
+        <div class="trust"><span><svg class="i"><use href="#i-lock"/></svg> No bank login, ever</span><span><svg class="i"><use href="#i-trash"/></svg> Files analyzed, never stored</span><span><svg class="i"><use href="#i-monitor"/></svg> Data stays in your browser</span></div>
       </div>
       <div class="catch">
         <div class="h">WHAT WE CATCH</div>
-        <div class="mini"><span class="tile t-peach">🚗</span><div><b>Insurance auto-renews +18%</b><small>Shop around before renewal</small></div><span class="amt">$256</span></div>
-        <div class="mini"><span class="tile t-lav">🏠</span><div><b>Lease notice deadline</b><small>Miss it → +$250/mo rent</small></div><span class="amt">$750</span></div>
-        <div class="mini"><span class="tile t-mint">🩺</span><div><b>FSA balance expires Dec 31</b><small>Use it or lose it</small></div><span class="amt">$612</span></div>
-        <div class="mini"><span class="tile t-sky">💻</span><div><b>Laptop warranty ends</b><small>Last day to file a claim</small></div><span class="amt">$350+</span></div>
-        <div class="mini"><span class="tile t-sun">🔁</span><div><b>Subscriptions & fees</b><small>Price hikes, trials, overdrafts</small></div><span class="amt">$537/yr</span></div>
+        <div class="mini"><span class="tile t-peach"><svg class="i"><use href="#i-car"/></svg></span><div><b>Insurance auto-renews +18%</b><small>Shop around before renewal</small></div><span class="amt">$256</span></div>
+        <div class="mini"><span class="tile t-lav"><svg class="i"><use href="#i-home"/></svg></span><div><b>Lease notice deadline</b><small>Miss it → +$250/mo rent</small></div><span class="amt">$750</span></div>
+        <div class="mini"><span class="tile t-mint"><svg class="i"><use href="#i-heart"/></svg></span><div><b>FSA balance expires Dec 31</b><small>Use it or lose it</small></div><span class="amt">$612</span></div>
+        <div class="mini"><span class="tile t-sky"><svg class="i"><use href="#i-laptop"/></svg></span><div><b>Laptop warranty ends</b><small>Last day to file a claim</small></div><span class="amt">$350+</span></div>
+        <div class="mini"><span class="tile t-sun"><svg class="i"><use href="#i-repeat"/></svg></span><div><b>Subscriptions & fees</b><small>Price hikes, trials, overdrafts</small></div><span class="amt">$537/yr</span></div>
       </div>
     </div>
 
@@ -250,13 +279,13 @@
       <h2>How it works</h2>
       <p class="sub">Three minutes once. Peace of mind all year.</p>
       <div class="flow" aria-label="How DeadlineGuard works">
-        <div class="st"><span class="tile t-peach">📄</span><b>Drop your paperwork</b>Policy, lease, receipt, FSA statement and a CSV from your bank app. No passwords, no bank connection.</div>
+        <div class="st"><span class="tile t-peach"><svg class="i"><use href="#i-file"/></svg></span><b>Drop your paperwork</b>Policy, lease, receipt, FSA statement and a CSV from your bank app. No passwords, no bank connection.</div>
         <div class="ar">→</div>
-        <div class="st"><span class="tile t-lav">🤖</span><b>AI reads the fine print</b>Auto-renewals, notice periods, price increases, use-it-or-lose-it balances, sneaky fees.</div>
+        <div class="st"><span class="tile t-lav"><svg class="i"><use href="#i-bot"/></svg></span><b>AI reads the fine print</b>Auto-renewals, notice periods, price increases, use-it-or-lose-it balances, sneaky fees.</div>
         <div class="ar">→</div>
-        <div class="st"><span class="tile t-sun">💲</span><b>Every deadline in dollars</b>"$750 at risk by Dec 2" — so you know what matters first.</div>
+        <div class="st"><span class="tile t-sun"><svg class="i"><use href="#i-coin"/></svg></span><b>Every deadline in dollars</b>"$750 at risk by Dec 2" — so you know what matters first.</div>
         <div class="ar">→</div>
-        <div class="st"><span class="tile t-mint">✅</span><b>One clear action</b>A ready-to-send email, a call script and a calendar reminder.</div>
+        <div class="st"><span class="tile t-mint"><svg class="i"><use href="#i-check"/></svg></span><b>One clear action</b>A ready-to-send email, a call script and a calendar reminder.</div>
       </div>
     </section>
 
@@ -267,14 +296,14 @@
         <div class="card plan">
           <div style="font-weight:800">Free</div>
           <div class="p">$0</div>
-          <ul><li>✅ Up to 5 documents</li><li>✅ Deadline timeline & money-at-risk score</li><li>✅ Subscription & fee scan</li><li style="color:var(--muted)">— Ready-to-send emails & scripts</li><li style="color:var(--muted)">— Calendar reminders</li></ul>
+          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Up to 5 documents</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Deadline timeline & money-at-risk score</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Subscription & fee scan</li><li style="color:var(--muted)"><span class="no">—</span>Ready-to-send emails & scripts</li><li style="color:var(--muted)"><span class="no">—</span>Calendar reminders</li></ul>
           <button class="btn btn-ghost" style="width:100%" onclick="runSample()">Try the demo</button>
         </div>
         <div class="card plan pro">
           <div style="font-weight:800">Pro <span class="pill p-up" style="background:var(--lime);color:var(--navy);margin-left:6px">MOST POPULAR</span></div>
           <div class="p">$5<small>/month</small></div>
           <div class="muted" style="font-size:14px">or $49/year</div>
-          <ul><li>✅ Unlimited documents</li><li>✅ AI-drafted emails & call scripts</li><li>✅ Calendar reminders for every deadline</li><li>✅ Quarterly re-scan reminders</li><li>✅ Household sharing (coming soon)</li></ul>
+          <ul><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Unlimited documents</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>AI-drafted emails & call scripts</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Calendar reminders for every deadline</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Quarterly re-scan reminders</li><li><span class="ok"><svg class="i"><use href="#i-check"/></svg></span>Household sharing (coming soon)</li></ul>
           <button class="btn btn-lime" style="width:100%" onclick="openUpgrade()">Get Pro</button>
         </div>
       </div>
@@ -302,9 +331,9 @@
 
     <div class="main">
       <div class="topbar">
-        <div><h1>Welcome back 👋</h1><p>Here's what could cost you money — and exactly what to do about it.</p></div>
+        <div><h1>Welcome back</h1><p>Here's what could cost you money — and exactly what to do about it.</p></div>
         <div class="top-actions">
-          <button class="btn btn-dark btn-sm" onclick="$('fileIn').click()">＋ Upload documents</button>
+          <button class="btn btn-dark btn-sm" onclick="$('fileIn').click()"><svg class="i"><use href="#i-upload"/></svg> Upload documents</button>
           <button class="btn btn-ghost btn-sm" onclick="resetAll()">Reset</button>
         </div>
       </div>
@@ -317,9 +346,9 @@
               <div class="v" id="sTotal">$0</div>
               <div class="note" id="sTotalNote">Add documents to see your number</div>
             </div>
-            <div class="card kpi"><span class="tile t-peach">⏰</span><div><div class="k">Deadlines in next 90 days</div><div class="v" id="s90">0</div></div></div>
-            <div class="card kpi"><span class="tile t-lav">🔁</span><div><div class="k">Subscriptions per year</div><div class="v" id="sSubs">$0</div></div></div>
-            <div class="card kpi"><span class="tile t-sun">💸</span><div><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div></div>
+            <div class="card kpi"><span class="tile t-peach"><svg class="i"><use href="#i-clock"/></svg></span><div><div class="k">Deadlines in next 90 days</div><div class="v" id="s90">0</div></div></div>
+            <div class="card kpi"><span class="tile t-lav"><svg class="i"><use href="#i-repeat"/></svg></span><div><div class="k">Subscriptions per year</div><div class="v" id="sSubs">$0</div></div></div>
+            <div class="card kpi"><span class="tile t-sun"><svg class="i"><use href="#i-coin"/></svg></span><div><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div></div>
           </div>
 
           <div class="card panel" id="chartWhen">
@@ -331,7 +360,7 @@
 
           <div class="card panel">
             <div id="drop" class="drop" onclick="$('fileIn').click()">
-              <b>📄 Drop documents here or click to upload</b>
+              <b><svg class="i"><use href="#i-upload"/></svg> Drop documents here or click to upload</b>
               <span>Insurance policy, lease, receipt/warranty, FSA/HSA or tax notice (PDF, JPG, PNG, TXT) · Bank statement (CSV)</span>
             </div>
             <input id="fileIn" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv" style="display:none" />
@@ -341,7 +370,7 @@
           <div id="views">
             <div id="t-deadlines">
               <div class="ph" style="margin:4px 4px 12px"><div><h3>Your deadlines</h3><div class="cap">Sorted by what to act on first</div></div>
-                <button class="btn btn-ghost btn-sm" onclick="exportICS()">📆 Add all to calendar <span class="pro-badge">PRO</span></button></div>
+                <button class="btn btn-ghost btn-sm" onclick="exportICS()"><svg class="i"><use href="#i-cal"/></svg> Add all to calendar <span class="pro-badge">PRO</span></button></div>
               <div id="dl" class="dl"></div>
             </div>
             <div id="t-leaks" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Subscriptions & money leaks</h3><div class="cap">From your bank statement — analyzed in your browser</div></div></div><div id="leaks"></div></div>
@@ -402,7 +431,9 @@ const daysUntil = (d) => (d ? Math.round((d - today()) / 86400000) : null);
 const fmtDate = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
 const shortDate = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-const ICONS = { auto_insurance: "🚗", home_insurance: "🏡", renters_insurance: "🏡", health_insurance: "🩺", warranty: "💻", lease: "🏠", tax: "🧾", fsa_hsa: "🩺", subscription: "🔁", id_document: "🪪", bill: "📨", other: "📄" };
+const svgI = (n) => `<svg class="i"><use href="#i-${n}"/></svg>`;
+const ICON_NAMES = { auto_insurance: "car", home_insurance: "home", renters_insurance: "home", health_insurance: "heart", warranty: "laptop", lease: "home", tax: "receipt", fsa_hsa: "heart", subscription: "repeat", id_document: "id", bill: "mail", other: "file" };
+const ICONS = Object.fromEntries(Object.entries(ICON_NAMES).map(([k, v]) => [k, svgI(v)]));
 const TILES = { auto_insurance: "t-peach", home_insurance: "t-lav", renters_insurance: "t-lav", health_insurance: "t-mint", warranty: "t-sky", lease: "t-lav", tax: "t-sun", fsa_hsa: "t-mint", subscription: "t-sun", id_document: "t-sky", bill: "t-peach", other: "t-sky" };
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = "none"), 2600); }
 
@@ -572,7 +603,7 @@ function renderCalendar(items) {
   const sel = calSel ? dated.filter((i) => sameDay(i.dateObj, calSel)) : [];
   const monthCount = dated.filter((i) => i.dateObj.getFullYear() === y && i.dateObj.getMonth() === m).length;
   $("calInfo").innerHTML = sel.length
-    ? `<b>${fmtDate(calSel)}</b>` + sel.map((i) => `${ICONS[i.doc.doc_type] || "📄"} ${esc(i.label)} · <b style="display:inline">${money(i.money_at_risk)}</b>`).join("<br>")
+    ? `<b>${fmtDate(calSel)}</b>` + sel.map((i) => `${esc(i.label)} · <b style="display:inline">${money(i.money_at_risk)}</b>`).join("<br>")
     : monthCount ? `${monthCount} deadline${monthCount > 1 ? "s" : ""} this month — tap a highlighted day.` : dated.length ? "No deadlines this month." : "Your deadlines will appear here.";
 }
 function calPick(t) { calSel = new Date(t); renderCalendar(allItems()); }
@@ -582,10 +613,10 @@ function renderNext(items) {
   const open = items.filter((i) => !i.done && i.dateObj && daysUntil(i.dateObj) >= 0)
     .sort((a, b) => statusOf(a).rank - statusOf(b).rank || (a.actBy || a.dateObj) - (b.actBy || b.dateObj)).slice(0, 4);
   $("next").innerHTML = open.length ? open.map((i) => { const s = statusOf(i); return `<button class="nx" onclick="focusItem('${i.id}')">
-      <span class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || "📄"}</span>
+      <span class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || ICONS.other}</span>
       <span><b>${esc(i.label)}</b><small>${shortDate(i.actBy || i.dateObj)} · ${money(i.money_at_risk)} at risk</small></span>
       <span class="pill ${s.cls}">${s.txt}</span></button>`; }).join("")
-    : `<div class="empty" style="padding:12px">${items.length ? "All caught up 🎉" : "Nothing yet — try the sample documents."}</div>`;
+    : `<div class="empty" style="padding:12px">${items.length ? "All caught up — nice work!" : "Nothing yet — try the sample documents."}</div>`;
 }
 function focusItem(id) {
   setView("deadlines");
@@ -606,16 +637,16 @@ function renderDeadlines(items) {
   const sorted = [...items].sort((a, b) => statusOf(a).rank - statusOf(b).rank || ((a.actBy || a.dateObj || 9e15) - (b.actBy || b.dateObj || 9e15)));
   el.innerHTML = sorted.map((i) => { const s = statusOf(i); return `
     <div class="card item ${i.done ? "done" : ""}" data-id="${esc(i.id)}">
-      <div class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || "📄"}</div>
+      <div class="tile ${TILES[i.doc.doc_type] || "t-sky"}">${ICONS[i.doc.doc_type] || ICONS.other}</div>
       <div>
         <h4>${esc(i.label)}</h4>
         <div class="meta">${esc(i.doc.title || i.doc.fileName)} · Deadline ${fmtDate(i.dateObj)} (${whenTxt(i.dateObj)})</div>
         <div class="why">${esc(i.why)}</div>
         ${i.action ? `<div class="action"><b>Do this${i.actBy ? " by " + fmtDate(i.actBy) : ""}:</b> ${esc(i.action)}</div>` : ""}
         <div class="acts">
-          ${i.draft_email ? `<button class="btn btn-ghost btn-sm" onclick="openDraft('${i.id}')">✉️ Draft email <span class="pro-badge">PRO</span></button>` : ""}
-          <button class="btn btn-ghost btn-sm" onclick="exportICS('${i.id}')">📆 Remind me <span class="pro-badge">PRO</span></button>
-          <button class="btn ${i.done ? "btn-ghost" : "btn-lime"} btn-sm" onclick="toggleDone('${i.id}')">${i.done ? "↩︎ Undo" : "✓ Mark handled"}</button>
+          ${i.draft_email ? `<button class="btn btn-ghost btn-sm" onclick="openDraft('${i.id}')">${svgI("mail")} Draft email <span class="pro-badge">PRO</span></button>` : ""}
+          <button class="btn btn-ghost btn-sm" onclick="exportICS('${i.id}')">${svgI("cal")} Remind me <span class="pro-badge">PRO</span></button>
+          <button class="btn ${i.done ? "btn-ghost" : "btn-lime"} btn-sm" onclick="toggleDone('${i.id}')">${i.done ? svgI("undo") + " Undo" : svgI("check") + " Mark handled"}</button>
         </div>
       </div>
       <div class="right">
@@ -639,7 +670,7 @@ function renderLeaks(sum) {
   if (!leakData) { el.innerHTML = '<div class="card empty">Upload a bank statement (CSV) to find subscriptions, price hikes, forgotten trials, duplicate charges and fees.<br/><span style="font-size:13px">Most banks: Account → Statements/Activity → Download → CSV.</span></div>'; return; }
   leakDrafts = {};
   const f = leakData; let k = 0;
-  const btn = (kind, x) => { const id = "L" + k++; leakDrafts[id] = leakAction(kind, x); return `<button class="btn btn-ghost btn-sm" onclick="openLeakDraft('${id}')">✉️ What to say <span class="pro-badge">PRO</span></button>`; };
+  const btn = (kind, x) => { const id = "L" + k++; leakDrafts[id] = leakAction(kind, x); return `<button class="btn btn-ghost btn-sm" onclick="openLeakDraft('${id}')">${svgI("mail")} What to say <span class="pro-badge">PRO</span></button>`; };
   const planned = f.subscriptions.filter((s) => state.cancel[s.name]).reduce((a, s) => a + s.annual, 0);
   const rows = [];
   f.priceHikes.forEach((x) => rows.push(`<tr><td><b>${esc(x.name)}</b><span class="tag p-act">PRICE HIKE</span><div class="meta">${money2(x.from)} → ${money2(x.to)}</div></td><td>${money(x.annualImpact)}/yr</td><td style="text-align:right">${btn("hike", x)}</td></tr>`));
@@ -648,11 +679,11 @@ function renderLeaks(sum) {
   if (f.fees.length) { const total = f.fees.reduce((a, x) => a + x.amount, 0); rows.push(`<tr><td><b>Bank fees</b><span class="tag p-act">FEES</span><div class="meta">${f.fees.map((x) => esc(x.name) + " " + money2(x.amount)).join(" · ")}</div></td><td>${money(sum.feeAnnual)}/yr pace</td><td style="text-align:right">${btn("fee", { count: f.fees.length, total })}</td></tr>`); }
 
   el.innerHTML = `
-    <div class="savebar"><span>💚 Your savings plan — subscriptions you chose to cancel</span><span class="v">${money(planned)}/yr</span></div>
-    <div class="card" style="margin-bottom:14px;overflow:hidden"><table class="leaks"><thead><tr><th>Money leaks we found</th><th>Cost</th><th></th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="3" class="empty">No leaks found 🎉</td></tr>'}</tbody></table></div>
+    <div class="savebar"><span>Your savings plan — subscriptions you chose to cancel</span><span class="v">${money(planned)}/yr</span></div>
+    <div class="card" style="margin-bottom:14px;overflow:hidden"><table class="leaks"><thead><tr><th>Money leaks we found</th><th>Cost</th><th></th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="3" class="empty">No leaks found</td></tr>'}</tbody></table></div>
     <div class="card" style="overflow:hidden"><table class="leaks"><thead><tr><th>All recurring charges (${f.subscriptions.length}) — still using them?</th><th>Per year</th><th>Next charge</th><th></th></tr></thead><tbody>
       ${f.subscriptions.map((s) => `<tr><td><b>${esc(s.name)}</b><div class="meta">${money2(s.amount)} ${s.cadence}</div></td><td>${money(s.annual)}</td><td>${fmtDate(new Date(s.nextDate))}</td>
-      <td style="text-align:right;white-space:nowrap">${state.cancel[s.name] ? btn("cancel", s) + ` <button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">Keep</button>` : `<button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">✂️ Cancel this</button>`}</td></tr>`).join("")}
+      <td style="text-align:right;white-space:nowrap">${state.cancel[s.name] ? btn("cancel", s) + ` <button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">Keep</button>` : `<button class="btn btn-ghost btn-sm" onclick="toggleCancel('${esc(s.name)}')">${svgI("cut")} Cancel this</button>`}</td></tr>`).join("")}
     </tbody></table></div>`;
 }
 
@@ -660,19 +691,19 @@ function renderDocs() {
   const el = $("docs");
   if (!state.docs.length && !state.csv) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet.</div>'; return; }
   el.innerHTML = state.docs.map((d) => `
-    <div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile ${TILES[d.doc_type] || "t-sky"}">${ICONS[d.doc_type] || "📄"}</span><div><h4>${esc(d.title || d.fileName)}</h4>
+    <div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile ${TILES[d.doc_type] || "t-sky"}">${ICONS[d.doc_type] || ICONS.other}</span><div><h4>${esc(d.title || d.fileName)}</h4>
       <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div></div></div>
       <p>${esc(d.summary)}</p>
       ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:700;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
-    </div>`).join("") + (state.csv ? `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile t-sun">🏦</span><div><h4>Bank statement</h4><div class="meta">CSV · analyzed in your browser</div></div></div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
+    </div>`).join("") + (state.csv ? `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile t-sun">${svgI("bank")}</span><div><h4>Bank statement</h4><div class="meta">CSV · analyzed in your browser</div></div></div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
 }
 
 /* ================= Actions ================= */
 function toggleDone(id) {
   state.done[id] = !state.done[id]; save(); render();
-  if (state.done[id]) { const it = allItems().find((x) => x.id === id); toast(`Nice! ${money(it && it.money_at_risk)} protected 🛡️`); }
+  if (state.done[id]) { const it = allItems().find((x) => x.id === id); toast(`Nice! ${money(it && it.money_at_risk)} protected`); }
 }
-function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan ✂️"); }
+function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan"); }
 function resetAll() {
   showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-dark" onclick="doReset()">Reset</button></div>`);
@@ -683,16 +714,16 @@ function needPro() { if (state.pro) return false; openUpgrade(); return true; }
 function openUpgrade() {
   showModal(`<h3>Upgrade to Pro <span class="pro-badge">$5/mo</span></h3>
     <p class="sub" style="margin:6px 0 0">Unlock ready-to-send emails, call scripts and calendar reminders for every deadline. One avoided auto-renewal pays for years of Pro.</p>
-    <div class="box" style="margin-top:14px">🧪 <b>Hackathon demo — test mode.</b> No card is charged. Click below to activate Pro on this browser.</div>
+    <div class="box" style="margin-top:14px"><b>Hackathon demo — test mode.</b> No card is charged. Click below to activate Pro on this browser.</div>
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Not now</button><button class="btn btn-lime" onclick="activatePro()">Activate Pro (test mode)</button></div>`);
 }
-function activatePro() { state.pro = true; save(); closeModal(); toast("Pro activated ✨"); render(); }
+function activatePro() { state.pro = true; save(); closeModal(); toast("Pro activated"); render(); }
 
 function showDraft(d) {
   if (!d) return;
   const mail = `mailto:?subject=${encodeURIComponent(d.subject || "")}&body=${encodeURIComponent(d.body || "")}`;
   window._draftText = `Subject: ${d.subject || ""}\n\n${d.body || ""}`;
-  showModal(`<h3>✉️ Ready to send</h3>
+  showModal(`<h3>Ready to send</h3>
     <label>To</label><div class="box">${esc(d.to || "—")}</div>
     <label>Subject</label><div class="box">${esc(d.subject || "")}</div>
     <label>Message</label><div class="box">${esc(d.body || "")}</div>
@@ -719,7 +750,7 @@ function exportICS(id) {
     const d = i.actBy && i.actBy < (i.dateObj || i.actBy) ? i.actBy : i.dateObj || i.actBy;
     const end = new Date(d); end.setDate(end.getDate() + 1);
     return ["BEGIN:VEVENT", `UID:${i.id.replace(/[^a-z0-9]/gi, "")}-${ymd(d)}@deadlineguard`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
-      `SUMMARY:${icsEsc("⚠️ " + i.label + " (" + money(i.money_at_risk) + " at risk)")}`,
+      `SUMMARY:${icsEsc("Deadline: " + i.label + " (" + money(i.money_at_risk) + " at risk)")}`,
       `DESCRIPTION:${icsEsc((i.action ? "Do this: " + i.action + "\n" : "") + "Deadline: " + fmtDate(i.dateObj) + "\n" + (i.why || ""))}`,
       "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY", `DESCRIPTION:${icsEsc(i.label)}`, "END:VALARM", "END:VEVENT"].join("\r\n");
   });
@@ -734,7 +765,7 @@ function exportICS(id) {
 /* ================= Upload & analysis ================= */
 function fileRow(name) {
   const row = document.createElement("div"); row.className = "file";
-  row.innerHTML = `<span>${name.endsWith(".csv") ? "🏦" : "📄"}</span><span>${esc(name)}</span><span class="st"><span class="spin"></span></span>`;
+  row.innerHTML = `<span class="tile ${name.endsWith(".csv") ? "t-sun" : "t-sky"}" style="width:30px;height:30px;border-radius:9px">${svgI(name.endsWith(".csv") ? "bank" : "file")}</span><span>${esc(name)}</span><span class="st"><span class="spin"></span></span>`;
   $("files").prepend(row);
   return { ok: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--mint-d)">✓ ${esc(m)}</span>`), err: (m) => (row.querySelector(".st").innerHTML = `<span style="color:var(--peach-d)">✕ ${esc(m)}</span>`) };
 }
@@ -807,7 +838,7 @@ async function runSample() {
     for (const x of csv) await analyzeFile(x.name, x.blob);
     await Promise.all(docs.map((x) => analyzeFile(x.name, x.blob, saved[x.name])));
   } catch (e) { toast("Could not load sample documents: " + (e.message || e)); }
-  b.disabled = false; b.textContent = "▶ Try with sample documents";
+  b.disabled = false; b.innerHTML = svgI("play") + " Try with sample documents";
 }
 
 /* ================= Navigation ================= */

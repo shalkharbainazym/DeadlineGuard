@@ -1,45 +1,106 @@
 # DeadlineGuard 🛡️
 
 **Adulting gets expensive when you miss a deadline.**
-DeadlineGuard reads your insurance policies, lease, receipts/warranties, benefits statements and bank statement, finds every date and money leak that can cost you money, and tells you exactly what to do.
 
-Built for **Business Cup 2.0 — From Zero to Product in 24H** (Money track).
+> **EN:** DeadlineGuard reads your insurance policy, lease, receipts, FSA statement and bank CSV, finds every date and money leak that can cost you money, shows it in dollars and tells you exactly what to do. No bank login, files are never stored.
 
-## What it does
-- 📄 **AI document reader** — upload a PDF/photo; AI extracts deadlines, amounts, auto-renewals, notice periods and hidden costs.
-- 💰 **Money-at-risk score** — "you could lose $X in the next 12 months".
-- 🔁 **Bank statement scan (CSV, runs in the browser)** — recurring subscriptions, price hikes, free trials that turned paid, duplicate charges, bank fees.
-- ✉️ **Ready-to-send emails & call scripts** (Pro).
-- 📆 **Calendar reminders** (.ics for Google/Apple/Outlook) (Pro).
-- 🔒 **Privacy-first** — no bank login, files are not stored, data stays in your browser (localStorage).
+🔗 **Демо (без регистрации):** https://deadlineguard-app.vercel.app → нажмите **«▶ Try with sample documents»**
 
-## Tech
-Plain HTML/CSS/JS (no build step) + one serverless function `api/analyze.js` (Vercel) that calls Claude (Anthropic) or OpenAI.
-
-```
-index.html          # the whole web app
-js/leaks.js         # subscription / fee / duplicate detection (pure JS, testable)
-api/analyze.js      # AI document analysis endpoint (Vercel function)
-samples/            # fictional demo documents + bank statement CSV
-server.js           # local dev server (no npm install needed)
-```
-
-## Run locally
-```bash
-# Windows PowerShell
-$env:ANTHROPIC_API_KEY="sk-ant-..."     # or $env:OPENAI_API_KEY="sk-..."
-node server.js
-# open http://localhost:3000
-```
-
-## Deploy (Vercel)
-1. vercel.com → **Add New → Project** → import this GitHub repo → Deploy (no settings needed).
-2. Project → **Settings → Environment Variables** → add `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) → **Redeploy**.
-3. Open the URL and click **Try with sample documents**.
-
-## Business model
-Free: 5 documents, deadlines, money-at-risk score, subscription scan.
-Pro: $5/month or $49/year — unlimited documents, AI emails & scripts, calendar reminders.
+Проект для хакатона **Business Cup 2.0** (Nazarbayev University, 14–15 ноября 2026), трек **MONEY**.
 
 ---
-*Sample documents are fictional. DeadlineGuard provides general information, not legal, tax or financial advice.*
+
+## Проблема
+Молодые взрослые в США (25–45 лет), впервые живущие самостоятельно, теряют деньги не из‑за больших решений, а из‑за пропущенных дат:
+- страховка **автоматически продлевается** дороже (+18% в нашем примере);
+- договор аренды требует уведомления **за 60 дней**, иначе аренда растёт до month‑to‑month;
+- остаток **FSA сгорает 31 декабря** (в среднем $404 у тех, кто теряет, EBRI);
+- **забытые подписки, пробные периоды, ставшие платными, дубли платежей и комиссии** (в среднем люди недооценивают траты на подписки на $133 в месяц, C+R Research).
+
+Документы есть, но никто не читает мелкий шрифт и не ставит напоминания.
+
+## Решение
+Пользователь загружает документы и CSV‑выписку из банка, а DeadlineGuard:
+1. **AI читает документ** (PDF / фото / TXT) и находит тип документа, дедлайны, суммы, автопродление, скрытые платежи.
+2. **Переводит каждый дедлайн в доллары:** «$750 at risk by Dec 2».
+3. **Анализирует CSV‑выписку прямо в браузере:** подписки, повышения цены, триалы → платно, дубли, комиссии банка.
+4. Показывает **главную метрику:** «Сколько денег вы можете потерять за 12 месяцев».
+5. Даёт **одно действие** на каждый риск: готовое письмо / скрипт звонка (Pro) и напоминание в календарь `.ics` (Pro).
+6. **Геймификация:** кольцо «Money protected» растёт, когда пользователь закрывает дедлайны и отменяет подписки.
+
+## Возможности
+| Функция | Free | Pro ($5/мес или $49/год) |
+|---|:---:|:---:|
+| AI‑анализ документов | до 5 | без лимита |
+| Дашборд: деньги под риском, график по неделям, календарь, «Next up» | ✅ | ✅ |
+| Анализ подписок и комиссий (CSV) | ✅ | ✅ |
+| Готовые письма и скрипты звонков | — | ✅ |
+| Напоминания в календарь (.ics) | — | ✅ |
+
+> В демо Pro включается в **test mode** без оплаты (кнопка «Activate Pro (test mode)»).
+
+## Приватность
+- **Нет логина в банк.** Пользователь сам скачивает CSV из банковского приложения.
+- **Файлы не хранятся.** Документ отправляется в AI только для анализа, сервер ничего не сохраняет.
+- **CSV не покидает браузер:** детектор подписок работает на клиенте (`js/leaks.js`).
+- Результаты хранятся только в `localStorage` браузера пользователя.
+
+## Как это работает (архитектура)
+```
+Браузер (index.html)
+ ├─ CSV ──► js/leaks.js (локально): подписки, повышения цены, триалы, дубли, комиссии
+ └─ PDF/фото ──► POST /api/analyze (Vercel Serverless)
+                    └─► Claude (ANTHROPIC_API_KEY) или Gemini (GEMINI_API_KEY) или OpenAI (OPENAI_API_KEY)
+                    ◄── JSON: doc_type, items[{date, money_at_risk, action, draft_email…}], hidden_costs
+ └─ Дашборд: метрики, график, календарь, статусы, письма (Pro), .ics (Pro), localStorage
+```
+- **Без сборки и без npm‑зависимостей**: чистые HTML/CSS/JS + одна serverless‑функция.
+- **Надёжное демо:** если AI недоступен (нет ключа, лимит, перегрузка), примеры показывают сохранённый анализ (`samples/sample_results.json`) с пометкой «saved demo analysis». Свои документы пользователя анализирует только настоящий AI.
+- **Gemini:** повтор при перегрузке (429/503) и автоматический переход на запасную модель.
+
+## Структура
+```
+index.html                 # всё веб‑приложение: лендинг + дашборд
+js/leaks.js                # детектор подписок/комиссий/дублей (чистый JS, работает в браузере и Node)
+api/analyze.js             # AI‑анализ документа (Vercel Serverless Function)
+samples/                   # 4 вымышленных PDF + bank_statement.csv + сохранённые результаты
+server.js                  # локальный сервер для разработки (без npm install)
+vercel.json                # таймаут функции 60 с
+pitch/PITCH_DECK.md        # текст pitch deck (10 слайдов)
+```
+
+## Запуск локально
+Нужен Node.js 18+.
+```bash
+# Windows PowerShell
+$env:GEMINI_API_KEY="..."        # или ANTHROPIC_API_KEY / OPENAI_API_KEY
+node server.js
+# открыть http://localhost:3000
+```
+Без ключа сайт тоже работает: CSV‑анализ настоящий, примеры PDF в режиме сохранённого анализа.
+
+## Деплой на Vercel
+1. vercel.com → **Add New → Project** → импорт этого репозитория → **Deploy** (Framework Preset: Other, настройки сборки не нужны).
+2. **Settings → Environment Variables** → добавить **один** ключ:
+   - `GEMINI_API_KEY` — бесплатно, ключ на aistudio.google.com (модель по умолчанию `gemini-3.5-flash-lite`, можно поменять через `GEMINI_MODEL`);
+   - или `ANTHROPIC_API_KEY` (модель `claude-sonnet-5-5`, переменная `ANTHROPIC_MODEL`);
+   - или `OPENAI_API_KEY` (`OPENAI_MODEL`).
+3. **Deployments → ⋯ → Redeploy**, чтобы новая переменная подхватилась.
+4. **Settings → Deployment Protection → Vercel Authentication: Disabled**, чтобы сайт открывался без логина.
+
+## Проверка
+Детектор на `samples/bank_statement.csv` находит: **8 подписок, повышение цены Netflix ($15.49 → $17.99), триал Audible, ставший платным, дубль Amazon ($49.99), 4 комиссии** — итого **$537.50/год** утечек.
+
+## Бизнес‑модель (кратко)
+Freemium → Pro **$5/мес или $49/год**. Себестоимость AI‑анализа — центы на пользователя в год. Каналы: короткие видео «adulting money tips», SEO‑страницы вида «how to cancel X / lease notice letter template», реферальная программа «покажи, сколько сэкономил». Подробно — в [pitch/PITCH_DECK.md](pitch/PITCH_DECK.md).
+
+## Конкуренты
+| | DeadlineGuard | Rocket Money | Trustworthy |
+|---|---|---|---|
+| Фокус | Защита денег: каждый дедлайн в $ + действие | Бюджет и подписки | Хранилище семейных документов |
+| Логин в банк | **Не нужен** (CSV) | Нужен | Не нужен |
+| Читает полисы, аренду, гарантии, FSA | **Да (AI)** | Нет | Хранит, без оценки в $ |
+| Цена | $5/мес · $49/год | Premium ~$7–14/мес, Premium+ $15/мес | Free + платные годовые планы |
+
+---
+*Примеры документов вымышленные. DeadlineGuard даёт общую информацию, а не юридическую, налоговую или финансовую консультацию.*
