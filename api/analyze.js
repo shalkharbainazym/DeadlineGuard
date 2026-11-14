@@ -1,6 +1,7 @@
 // DeadlineGuard — AI document analyzer (Vercel serverless function, no dependencies)
 // Set ONE of these environment variables in Vercel → Project → Settings → Environment Variables:
 //   ANTHROPIC_API_KEY   (optional: ANTHROPIC_MODEL, default "claude-sonnet-5-5")
+//   GEMINI_API_KEY      (free tier; optional: GEMINI_MODEL, default "gemini-3.5-flash-lite")
 //   OPENAI_API_KEY      (optional: OPENAI_MODEL, default "gpt-4.1-mini")
 // The uploaded file is sent to the AI provider for analysis and is NOT stored anywhere.
 
@@ -79,6 +80,35 @@ async function callAnthropic({ data, mediaType, text, fileName, today }) {
   return cleanJson(out);
 }
 
+// Google Gemini — has a free tier (key from aistudio.google.com, no card needed)
+async function callGemini({ data, mediaType, text, fileName, today }) {
+  const parts = [];
+  if (text) parts.push({ text: `Document "${fileName}":\n\n${text}` });
+  else parts.push({ inline_data: { mime_type: mediaType, data } });
+  parts.push({ text: PROMPT(today) });
+
+  const models = [process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
+  let lastErr;
+  for (const model of [...new Set(models)]) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts }],
+        generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
+      }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok) {
+      const out = (j.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("");
+      return cleanJson(out);
+    }
+    lastErr = new Error(j?.error?.message || `Gemini error ${r.status}`);
+    if (r.status !== 404) break; // only fall back to the next model if this one doesn't exist
+  }
+  throw lastErr;
+}
+
 async function callOpenAI({ data, mediaType, text, fileName, today }) {
   const content = [];
   if (text) {
@@ -124,8 +154,9 @@ module.exports = async function handler(req, res) {
 
     let result;
     if (process.env.ANTHROPIC_API_KEY) result = await callAnthropic(args);
+    else if (process.env.GEMINI_API_KEY) result = await callGemini(args);
     else if (process.env.OPENAI_API_KEY) result = await callOpenAI(args);
-    else throw new Error("No AI key configured. Add ANTHROPIC_API_KEY or OPENAI_API_KEY in your Vercel environment variables.");
+    else throw new Error("No AI key configured. Add ANTHROPIC_API_KEY, GEMINI_API_KEY or OPENAI_API_KEY in your Vercel environment variables.");
 
     if (!Array.isArray(result.items)) result.items = [];
     if (!Array.isArray(result.hidden_costs)) result.hidden_costs = [];

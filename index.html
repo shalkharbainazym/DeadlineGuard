@@ -117,7 +117,31 @@
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;display:none;z-index:60}
   footer{color:var(--muted);font-size:13px;padding:40px 0;border-top:1px solid var(--line);margin-top:30px}
 
+  /* Charts */
+  .charts{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:18px}
+  .chart{padding:18px 20px;position:relative}
+  .chart h3{margin:0;font-size:15px} .chart .cap{color:var(--muted);font-size:12.5px;margin:2px 0 12px}
+  .tl{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;align-items:end;height:150px;border-bottom:1px solid var(--line)}
+  .tl .col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:default}
+  .tl .val{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:3px;white-space:nowrap}
+  .tl .bar{width:min(26px,80%);background:var(--brand);border-radius:4px 4px 0 0;min-height:0;transition:height .6s}
+  .tl .col:hover .bar{background:var(--brand-d)}
+  .tl .col.empty .bar{background:transparent}
+  .tlx{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+  .hb{display:grid;gap:10px}
+  .hb .r{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;font-size:13px;cursor:default}
+  .hb .lab{color:var(--ink)} .hb .num{text-align:right;font-weight:700;color:var(--ink)}
+  .hb .track{grid-column:1/-1;grid-row:2;height:12px;border-radius:0 4px 4px 0;background:var(--bg)}
+  .hb .fill{height:100%;background:var(--brand);border-radius:0 4px 4px 0;transition:width .6s}
+  .hb .r:hover .fill{background:var(--brand-d)}
+  .ctip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;line-height:1.45;padding:8px 10px;border-radius:8px;max-width:260px;display:none;z-index:5;box-shadow:var(--shadow)}
+  .flow{display:flex;align-items:stretch;gap:0;margin:0 0 22px;flex-wrap:wrap}
+  .flow .st{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;font-size:13.5px;color:var(--muted)}
+  .flow .st b{display:block;color:var(--ink);font-size:14.5px;margin:4px 0 2px} .flow .st .e{font-size:24px}
+  .flow .ar{display:grid;place-items:center;color:var(--brand);font-size:22px;font-weight:800;padding:0 8px}
+
   @media (max-width:860px){
+    .charts{grid-template-columns:1fr} .flow{flex-direction:column} .flow .ar{transform:rotate(90deg);padding:4px 0}
     .hero{grid-template-columns:1fr;padding-top:36px} h1{font-size:36px}
     .stats{grid-template-columns:1fr 1fr} .how,.pricing{grid-template-columns:1fr}
     .item{grid-template-columns:auto 1fr} .right{grid-column:1/-1;text-align:left}
@@ -177,6 +201,22 @@
       <div class="card stat"><div class="k">Leaks found per year</div><div class="v" id="sLeaks">$0</div></div>
     </div>
 
+    <div class="charts" id="charts" style="display:none">
+      <div class="card chart" id="chartWhen">
+        <h3>When your money is at risk</h3>
+        <div class="cap" id="tlCap">Money at risk from document deadlines, by week (next 90 days)</div>
+        <div class="tl" id="tl" role="img"></div>
+        <div class="tlx" id="tlx"></div>
+        <div class="ctip" id="tipWhen"></div>
+      </div>
+      <div class="card chart" id="chartWhere">
+        <h3>Where it comes from</h3>
+        <div class="cap" id="hbCap">What adds up to your 12-month number</div>
+        <div class="hb" id="hb" role="img"></div>
+        <div class="ctip" id="tipWhere"></div>
+      </div>
+    </div>
+
     <div class="card" style="padding:18px">
       <div id="drop" class="drop" onclick="document.getElementById('fileIn').click()">
         <b>📄 Drop documents here or click to upload</b>
@@ -209,6 +249,15 @@
   <section id="how">
     <h2>How it works</h2>
     <p class="sub">Three minutes once. Peace of mind all year.</p>
+    <div class="flow" aria-label="How DeadlineGuard works">
+      <div class="st"><div class="e">📄</div><b>Your paperwork</b>Policy, lease, receipt, FSA, bank CSV</div>
+      <div class="ar">→</div>
+      <div class="st"><div class="e">🤖</div><b>AI reads the fine print</b>Dates, amounts, auto-renewals, fees</div>
+      <div class="ar">→</div>
+      <div class="st"><div class="e">💲</div><b>Deadline in dollars</b>"$750 at risk by Dec 2"</div>
+      <div class="ar">→</div>
+      <div class="st"><div class="e">✅</div><b>One clear action</b>Ready email + calendar reminder</div>
+    </div>
     <div class="how">
       <div class="card"><div class="n">1</div><h3>Drop your paperwork</h3><p>Upload the PDFs and photos you already have, plus a CSV statement from your bank app. No passwords, no bank connection.</p></div>
       <div class="card"><div class="n">2</div><h3>AI finds the money traps</h3><p>We read the fine print: auto-renewals, price increases, notice periods, use-it-or-lose-it balances, warranty ends, sneaky fees.</p></div>
@@ -301,7 +350,77 @@ function render() {
   renderDeadlines(items);
   renderLeaks(sum);
   renderDocs();
+  renderCharts(upcoming, in365, sum);
 }
+
+/* ================= Charts ================= */
+function chartTip(tipId, host, html, ev) {
+  const tip = $(tipId);
+  if (!html) { tip.style.display = "none"; return; }
+  tip.innerHTML = html; tip.style.display = "block";
+  const r = host.getBoundingClientRect();
+  let x = ev.clientX - r.left + 12, y = ev.clientY - r.top + 12;
+  if (x + tip.offsetWidth > r.width) x = ev.clientX - r.left - tip.offsetWidth - 12;
+  tip.style.left = Math.max(4, x) + "px"; tip.style.top = y + "px";
+}
+
+const WEEKS = 13;
+let chartData = { months: [], parts: [] };
+function renderCharts(upcoming, in365, sum) {
+  const show = upcoming.length || sum;
+  $("charts").style.display = show ? "grid" : "none";
+  if (!show) return;
+
+  // 1) Money at risk per week, next 13 weeks / ~90 days (single series, magnitude → one brand color)
+  const t0 = today(); const months = []; const short = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  for (let w = 0; w < WEEKS; w++) {
+    const s = new Date(t0); s.setDate(s.getDate() + w * 7); const e = new Date(s); e.setDate(e.getDate() + 6);
+    months.push({ label: w % 2 ? "" : short(s), long: `Week of ${short(s)} – ${short(e)}`, from: w * 7, to: w * 7 + 6, total: 0, items: [] });
+  }
+  let later = 0;
+  upcoming.filter((i) => daysUntil(i.dateObj) <= 365).forEach((i) => {
+    const n = daysUntil(i.dateObj); const b = months.find((x) => n >= x.from && n <= x.to);
+    if (b) { b.total += +i.money_at_risk || 0; b.items.push(i); } else later++;
+  });
+  const max = Math.max(1, ...months.map((x) => x.total));
+  chartData.months = months;
+  $("tlCap").textContent = `Money at risk from document deadlines, by week (next 90 days)${later ? ` · ${later} more deadline${later > 1 ? "s" : ""} later this year` : ""}`;
+  $("tl").setAttribute("aria-label", "Money at risk by week: " + months.filter((x) => x.total).map((x) => x.long + " " + money(x.total)).join(", "));
+  $("tl").innerHTML = months.map((x, k) => `<div class="col ${x.total ? "" : "empty"}" data-k="${k}">
+      ${x.total ? `<div class="val">${money(x.total)}</div>` : ""}
+      <div class="bar" style="height:${x.total ? Math.max(4, (x.total / max) * 118) : 0}px"></div></div>`).join("");
+  $("tlx").innerHTML = months.map((x) => `<div>${x.label}</div>`).join("");
+
+  // 2) What the 12-month number is made of (horizontal bars, sorted)
+  const parts = [
+    { name: "Document deadlines", v: in365, note: `${upcoming.filter((i) => daysUntil(i.dateObj) <= 365).length} open deadlines from your documents` },
+  ];
+  if (sum) parts.push(
+    { name: "Bank fees", v: sum.feeAnnual, note: `${money2(sum.feeTotal)} in fees on this statement, projected to a full year` },
+    { name: "Trials → paid", v: sum.trialAnnual, note: "Free trials that quietly became paid plans, per year" },
+    { name: "Duplicate charges", v: sum.dupTotal, note: "Charged twice for the same purchase — refundable" },
+    { name: "Price hikes", v: sum.hikeAnnual, note: "Extra you pay per year after subscription price increases" });
+  parts.sort((a, b) => b.v - a.v);
+  chartData.parts = parts;
+  const pmax = Math.max(1, ...parts.map((p) => p.v));
+  const ptotal = parts.reduce((a, p) => a + p.v, 0);
+  $("hbCap").textContent = `What adds up to your ${money(ptotal)} 12-month number`;
+  $("hb").setAttribute("aria-label", parts.map((p) => p.name + " " + money(p.v)).join(", "));
+  $("hb").innerHTML = parts.map((p, k) => `<div class="r" data-k="${k}"><span class="lab">${esc(p.name)}</span>
+<span class="num">${money(p.v)}</span>
+      <div class="track"><div class="fill" style="width:${p.v ? Math.max(2, (p.v / pmax) * 100) : 0}%"></div></div></div>`).join("");
+}
+
+$("tl").addEventListener("mousemove", (e) => {
+  const col = e.target.closest(".col"); const x = col && chartData.months[+col.dataset.k];
+  chartTip("tipWhen", $("chartWhen"), x && x.items.length ? `<b>${esc(x.long)} · ${money(x.total)} at risk</b><br>` + x.items.map((i) => `${esc(i.label)} — ${fmtDate(i.dateObj)}`).join("<br>") : x ? `<b>${esc(x.long)}</b><br>No deadlines` : "", e);
+});
+$("tl").addEventListener("mouseleave", () => chartTip("tipWhen"));
+$("hb").addEventListener("mousemove", (e) => {
+  const r = e.target.closest(".r"); const p = r && chartData.parts[+r.dataset.k];
+  chartTip("tipWhere", $("chartWhere"), p ? `<b>${esc(p.name)} · ${money(p.v)}</b><br>${esc(p.note)}` : "", e);
+});
+$("hb").addEventListener("mouseleave", () => chartTip("tipWhere"));
 
 function urgencyChip(d) {
   const n = daysUntil(d);

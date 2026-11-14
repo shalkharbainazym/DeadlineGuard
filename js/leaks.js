@@ -90,7 +90,19 @@
     words = words.filter((w) => w.length > 1 || words.length === 1);
     return words.slice(0, 2).join(" ") || desc.toUpperCase().slice(0, 20);
   }
-  const pretty = (k) => k.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  // Friendly names for common US merchants (raw bank descriptors are cryptic, e.g. "AUDIBLE*ADBL 2K4")
+  const ALIASES = [
+    [/^NETFLIX/, "Netflix"], [/^SPOTIFY/, "Spotify"], [/^HULU/, "Hulu"], [/^AUDIBLE/, "Audible"],
+    [/^APPLE( BILL)?$/, "Apple (iCloud / App Store)"], [/^ADOBE/, "Adobe Creative Cloud"], [/^AMAZON PRIME|^PRIME VIDEO/, "Amazon Prime"],
+    [/^AMAZON|^AMZN/, "Amazon"], [/^COMCAST|^XFINITY/, "Comcast Xfinity"], [/^DISNEY/, "Disney+"], [/^YOUTUBE/, "YouTube Premium"],
+    [/^MAX\b|^HBO/, "Max"], [/^PARAMOUNT/, "Paramount+"], [/^PEACOCK/, "Peacock"], [/^CHATGPT|^OPENAI/, "ChatGPT Plus"],
+    [/^DROPBOX/, "Dropbox"], [/^MICROSOFT|^MSFT/, "Microsoft 365"], [/^PLANET FIT/, "Planet Fitness"], [/^IRONHOUSE/, "Ironhouse Fitness"],
+    [/^VERIZON/, "Verizon"], [/^T MOBILE|^TMOBILE/, "T-Mobile"], [/^AT&T|^ATT\b/, "AT&T"], [/^DOORDASH|^DASHPASS/, "DoorDash"],
+  ];
+  const pretty = (k) => {
+    for (const [re, name] of ALIASES) if (re.test(k)) return name;
+    return k.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   const DAY = 86400000;
   const median = (a) => { const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
