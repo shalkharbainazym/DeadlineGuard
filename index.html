@@ -1228,8 +1228,10 @@ function addDoc(name, j) {
 }
 
 // fallback: pre-computed result for the bundled sample documents, used only if the AI endpoint fails
+let pendingDocs = 0; // documents reserved against the Free limit while their analysis is running
 async function analyzeFile(name, blob, fallback) {
   const row = fileRow(name);
+  let reserved = false;
   try {
     if (/\.csv$/i.test(name)) {
       const text = await blob.text();
@@ -1241,7 +1243,14 @@ async function analyzeFile(name, blob, fallback) {
       row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`, "csv");
       return;
     }
-    if (!state.pro && state.docs.length >= FREE_DOC_LIMIT) { row.err("Free plan limit (5 docs) — upgrade to Pro"); openUpgrade(); return; }
+    // Free plan: count documents still being analyzed too — uploads run in parallel,
+    // so checking only finished documents let a 6th one slip through
+    if (!state.pro && state.docs.length + pendingDocs >= FREE_DOC_LIMIT) {
+      row.err(`Free plan limit (${FREE_DOC_LIMIT} documents) — upgrade to Pro or delete one`);
+      if ($("modal").style.display !== "flex") openUpgrade();
+      return;
+    }
+    pendingDocs++; reserved = true;
     if (blob.size > 4 * 1024 * 1024) throw new Error("File is over 4 MB");
     let payload;
     if (/\.txt$/i.test(name)) payload = { text: await blob.text(), fileName: name };
@@ -1269,6 +1278,7 @@ async function analyzeFile(name, blob, fallback) {
     const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
     row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`, doc.id);
   } catch (e) { row.err(e.message || String(e)); }
+  finally { if (reserved) pendingDocs--; }
 }
 
 async function handleFiles(list) {
@@ -1365,7 +1375,7 @@ function renderSettings() {
       </div>`
     : `<div class="card set-card plan-card">
         <div class="set-row"><div><div class="cap">Your plan</div><div class="big">Free <small>· $0</small></div></div><span class="pill p-grey">Current</span></div>
-        <div class="kv"><div>Documents used<b>${Math.min(used, FREE_DOC_LIMIT)} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
+        <div class="kv"><div>Documents used<b>${used} of ${FREE_DOC_LIMIT}</b></div><div>Emails & scripts<b>Locked</b></div><div>Calendar reminders<b>Locked</b></div></div>
         <div class="set-row"><span class="cap">Pro: unlimited documents, ready emails, call scripts and reminders.</span><button class="btn btn-lime btn-sm" onclick="openUpgrade()">Upgrade to Pro — $5/mo</button></div>
       </div>`;
   const cs = currentState(), det = detectedState();
