@@ -187,6 +187,15 @@
   .tag{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
   .savebar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;margin-bottom:14px;background:var(--lime);border-radius:18px;font-weight:700;gap:10px;flex-wrap:wrap}
   .savebar .v{font-size:22px;font-weight:800}
+  .device{gap:6px} .device .i{width:14px;height:14px}
+  .doc-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+  .search{display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:9px 14px;box-shadow:var(--shadow);flex:1;min-width:200px;max-width:340px;color:var(--muted)}
+  .search .i{width:17px;height:17px}
+  .search input{border:0;outline:0;font:500 14px "Plus Jakarta Sans",sans-serif;width:100%;background:none;color:var(--ink)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip-f{border:0;background:#fff;box-shadow:var(--shadow);border-radius:999px;padding:8px 12px;font:700 12.5px "Plus Jakarta Sans",sans-serif;color:var(--muted);cursor:pointer}
+  .chip-f span{opacity:.6;margin-left:2px} .chip-f.on{background:var(--navy);color:#fff}
+  .doc .acts{margin-top:14px}
   .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
   .doc{padding:18px} .doc h4{margin:0 0 4px;font-size:15px} .doc p{margin:8px 0;font-size:13.5px;color:#3d3f52;line-height:1.5}
   .doc ul{margin:6px 0 0 18px;padding:0;font-size:12.5px;color:var(--muted);line-height:1.6}
@@ -272,6 +281,9 @@
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
   <symbol id="i-bot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9.5 13v1M14.5 13v1M2.5 13v2M21.5 13v2"/></symbol>
   <symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 8l12 11M8 16L20 5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></symbol>
 </svg>
 <!-- ================= LANDING ================= -->
@@ -301,7 +313,7 @@
           <button class="btn btn-lime" onclick="openApp(true)">Upload my documents</button>
           <button id="dashBtn" class="btn btn-ghost" style="display:none" onclick="openApp()">Open my dashboard →</button>
         </div>
-        <div class="trust"><span><svg class="i"><use href="#i-lock"/></svg> No bank login, ever</span><span><svg class="i"><use href="#i-trash"/></svg> Files analyzed, never stored</span><span><svg class="i"><use href="#i-monitor"/></svg> Data stays in your browser</span></div>
+        <div class="trust"><span><svg class="i"><use href="#i-lock"/></svg> No bank login, ever</span><span><svg class="i"><use href="#i-trash"/></svg> Never stored on our servers</span><span><svg class="i"><use href="#i-monitor"/></svg> Data stays in your browser</span></div>
       </div>
       <div class="catch">
         <div class="h">WHAT WE CATCH</div>
@@ -425,7 +437,12 @@
               <div id="dl" class="dl"></div>
             </div>
             <div id="t-leaks" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Subscriptions & money leaks</h3><div class="cap">From your bank statement — analyzed in your browser</div></div></div><div id="leaks"></div></div>
-            <div id="t-docs" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Your documents</h3><div class="cap">What each document means for your money</div></div></div><div id="docs" class="docs"></div></div>
+            <div id="t-docs" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Your documents</h3><div class="cap">What each document means for your money</div></div><span class="pill p-done device"><svg class="i"><use href="#i-lock"/></svg>Saved on this device only</span></div>
+              <div class="doc-tools">
+                <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="docSearch" type="search" placeholder="Search documents…" aria-label="Search documents" oninput="docQuery=this.value;renderDocs()" /></label>
+                <div class="chips" id="docChips"></div>
+              </div>
+              <div id="docs" class="docs"></div></div>
             <div id="t-settings" style="display:none"><div class="ph" style="margin:4px 4px 12px"><div><h3>Settings</h3><div class="cap">Your plan, help and privacy controls</div></div></div><div id="settings" class="set-grid"></div></div>
           </div>
         </div>
@@ -788,15 +805,86 @@ function renderLeaks(sum) {
     </tbody></table></div>`;
 }
 
+/* ================= Documents ================= */
+const DOC_CATS = { Insurance: ["auto_insurance", "home_insurance", "renters_insurance"], Housing: ["lease"], Health: ["health_insurance", "fsa_hsa"], Warranty: ["warranty"], Tax: ["tax"] };
+const docCat = (type) => Object.keys(DOC_CATS).find((c) => DOC_CATS[c].includes(type)) || "Other";
+let docQuery = "", docFilter = "All";
+function docList() {
+  const list = state.docs.map((d) => ({ id: d.id, fileName: d.fileName, cat: docCat(d.doc_type), d }));
+  if (state.csv) list.push({ id: "csv", fileName: state.csvName || "bank_statement.csv", cat: "Other", csv: true });
+  return list;
+}
 function renderDocs() {
   const el = $("docs");
-  if (!state.docs.length && !state.csv) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet.</div>'; return; }
-  el.innerHTML = state.docs.map((d) => `
-    <div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile ${TILES[d.doc_type] || "t-sky"}">${ICONS[d.doc_type] || ICONS.other}</span><div><h4>${esc(d.title || d.fileName)}</h4>
-      <div class="meta">${esc(d.fileName)}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div></div></div>
+  const all = docList();
+  $("docChips").innerHTML = ["All", "Insurance", "Housing", "Health", "Warranty", "Tax", "Other"].map((c) => {
+    const n = c === "All" ? all.length : all.filter((x) => x.cat === c).length;
+    return `<button class="chip-f ${docFilter === c ? "on" : ""}" onclick="setDocFilter('${c}')">${c} <span>${n}</span></button>`;
+  }).join("");
+  if (!all.length) { el.innerHTML = '<div class="card empty" style="grid-column:1/-1">No documents yet — upload a document or try the sample documents.</div>'; return; }
+  const q = docQuery.trim().toLowerCase();
+  const shown = all.filter((x) => (docFilter === "All" || x.cat === docFilter) &&
+    (!q || [x.fileName, x.cat, x.d && x.d.title, x.d && x.d.provider, x.d && x.d.summary, x.csv && "bank statement csv"].join(" ").toLowerCase().includes(q)));
+  const acts = (id) => `<div class="acts">
+      <button class="btn btn-ghost btn-sm" onclick="viewDoc('${id}')">${svgI("eye")} View</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadDoc('${id}')">${svgI("download")} Download</button>
+      <button class="btn btn-ghost btn-sm" onclick="confirmDeleteDoc('${id}')">${svgI("trash")} Delete</button></div>`;
+  el.innerHTML = shown.length ? shown.map((x) => {
+    if (x.csv) return `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile t-sun">${svgI("bank")}</span><div><h4>Bank statement</h4><div class="meta">${esc(x.fileName)} · Other · analyzed in your browser</div></div></div>
+      <p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p>${acts("csv")}</div>`;
+    const d = x.d;
+    return `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile ${TILES[d.doc_type] || "t-sky"}">${ICONS[d.doc_type] || ICONS.other}</span><div><h4>${esc(d.title || d.fileName)}</h4>
+      <div class="meta">${esc(d.fileName)} · ${x.cat}${d.provider ? " · " + esc(d.provider) : ""}${d.demo ? ' · <span title="The AI service was unavailable, so this sample shows a saved analysis">saved demo analysis</span>' : ""}</div></div></div>
       <p>${esc(d.summary)}</p>
       ${d.hidden_costs && d.hidden_costs.length ? `<div class="meta" style="margin-top:8px;font-weight:700;color:var(--ink)">Hidden costs in the fine print</div><ul>${d.hidden_costs.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
-    </div>`).join("") + (state.csv ? `<div class="card doc"><div style="display:flex;gap:12px;align-items:center"><span class="tile t-sun">${svgI("bank")}</span><div><h4>Bank statement</h4><div class="meta">CSV · analyzed in your browser</div></div></div><p>${leakData ? leakData.subscriptions.length + " recurring charges detected." : ""}</p></div>` : "");
+      ${acts(d.id)}</div>`;
+  }).join("") : `<div class="card empty" style="grid-column:1/-1">No documents match${q ? ` "${esc(docQuery)}"` : ""}${docFilter !== "All" ? ` in ${docFilter}` : ""}.</div>`;
+}
+function setDocFilter(c) { docFilter = c; renderDocs(); }
+
+const MIME = { pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", gif: "image/gif", txt: "text/plain", csv: "text/plain" };
+const mimeOf = (name, fallback) => MIME[(name.split(".").pop() || "").toLowerCase()] || fallback || "application/octet-stream";
+const saveFile = (id, name, blob) => FileStore.put({ id, name, type: mimeOf(name, blob.type), blob, size: blob.size, added: Date.now() });
+
+// Find the file: this device's IndexedDB first, then the bundled sample (so samples always open)
+async function getDocFile(id) {
+  const x = docList().find((d) => d.id === id);
+  if (!x) return null;
+  const rec = await FileStore.get(id);
+  if (rec && rec.blob) return { name: x.fileName, blob: new Blob([rec.blob], { type: mimeOf(x.fileName, rec.type) }) };
+  if (SAMPLE_FILES.includes(x.fileName)) {
+    const r = await fetch("samples/" + x.fileName).catch(() => null);
+    if (r && r.ok) { const b = await r.blob(); saveFile(id, x.fileName, b); return { name: x.fileName, blob: new Blob([b], { type: mimeOf(x.fileName) }) }; }
+  }
+  return null;
+}
+async function viewDoc(id) {
+  const w = window.open("", "_blank"); // open synchronously so pop-up blockers allow it
+  const f = await getDocFile(id);
+  if (!f) { if (w) w.close(); return toast("This file isn't saved on this device — upload it again to view it"); }
+  const url = URL.createObjectURL(f.blob);
+  if (w) w.location.href = url; else location.href = url;
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+async function downloadDoc(id) {
+  const f = await getDocFile(id);
+  if (!f) return toast("This file isn't saved on this device — upload it again");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(f.blob); a.download = f.name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+function confirmDeleteDoc(id) {
+  const x = docList().find((d) => d.id === id); if (!x) return;
+  showModal(`<h3>Delete this document?</h3><p class="sub" style="margin:6px 0 0"><b>${esc(x.d ? x.d.title || x.fileName : "Bank statement")}</b> and its ${x.csv ? "subscription results" : "deadlines"} will be removed from this device.</p>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-danger" onclick="deleteDoc('${id}')">Delete</button></div>`);
+}
+async function deleteDoc(id) {
+  if (id === "csv") { state.csv = null; delete state.csvName; leakData = null; state.cancel = {}; }
+  else {
+    state.docs = state.docs.filter((d) => d.id !== id);
+    Object.keys(state.done).forEach((k) => { if (k.startsWith(id + ":")) delete state.done[k]; });
+  }
+  await FileStore.del(id);
+  calView = null; save(); closeModal(); render(); toast("Document deleted");
 }
 
 /* ================= Actions ================= */
@@ -806,10 +894,10 @@ function toggleDone(id) {
 }
 function toggleCancel(name) { state.cancel[name] = !state.cancel[name]; save(); render(); if (state.cancel[name]) toast("Added to your savings plan"); }
 function resetAll() {
-  showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents and results from this browser.</p>
+  showModal(`<h3>Start over?</h3><p class="sub" style="margin:6px 0 0">This removes all documents, saved files and results from this browser.</p>
     <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-dark" onclick="doReset()">Reset</button></div>`);
 }
-function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; calView = null; calSel = null; chartAnchor = null; chartSel = null; chartAuto = true; save(); $("files").innerHTML = ""; closeModal(); render(); }
+function doReset() { state = { docs: [], csv: null, done: {}, cancel: {}, pro: state.pro }; leakData = null; calView = null; calSel = null; chartAnchor = null; chartSel = null; chartAuto = true; save(); FileStore.clearAll(); $("files").innerHTML = ""; closeModal(); render(); }
 
 function needPro() { if (state.pro) return false; openUpgrade(); return true; }
 function openUpgrade() {
@@ -885,7 +973,8 @@ async function analyzeFile(name, blob, fallback) {
     if (/\.csv$/i.test(name)) {
       const text = await blob.text();
       const tx = Leaks.normalizeTransactions(text);
-      leakData = Leaks.detectLeaks(tx); state.csv = text; save(); render();
+      leakData = Leaks.detectLeaks(tx); state.csv = text; state.csvName = name; save(); render();
+      saveFile("csv", name, blob); // kept in this browser's IndexedDB only
       const s = Leaks.summarize(leakData);
       row.ok(`${tx.length} transactions · ${leakData.subscriptions.length} recurring · ${money(s.leakAnnual)}/yr in leaks`);
       return;
@@ -913,6 +1002,7 @@ async function analyzeFile(name, blob, fallback) {
     }
     calView = null; // re-center the calendar on the next deadline
     const doc = addDoc(name, j);
+    saveFile(doc.id, name, blob); // kept in this browser's IndexedDB only, never on our server
     const risk = (doc.items || []).reduce((a, i) => a + (+i.money_at_risk || 0), 0);
     row.ok(`${(doc.items || []).length} deadline${(doc.items || []).length === 1 ? "" : "s"} · ${money(risk)} at risk${doc.demo ? " (saved demo analysis)" : ""}`);
   } catch (e) { row.err(e.message || String(e)); }
